@@ -30,3 +30,9 @@ require_once GATHERPRESS_CORE_PATH . '/core/classes/class-autoloader.php';
 GatherPress\Core\Autoloader::register();
 GatherPress\Core\Setup::get_instance();
 GatherPress\BuddyPress\Setup::get_instance();
+
+$new_blocks = GATHERPRESS_CORE_PATH . '/new-gp-blocks.php';
+
+if ( file_exists( $new_blocks ) ) {
+	require $new_blocks;
+}
