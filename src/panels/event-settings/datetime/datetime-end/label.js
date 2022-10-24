@@ -7,7 +7,8 @@ import { Component } from 'react';
  * WordPress dependencies.
  */
 // eslint-disable-next-line @wordpress/no-unsafe-wp-apis
-import { dateI18n, __experimentalGetSettings } from '@wordpress/date';
+import { getSettings } from '@wordpress/data';
+import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -17,25 +18,25 @@ import { Broadcaster } from '../../../../helpers/broadcasting';
 import { validateDateTimeEnd } from '../helpers';
 import { hasEventPast, enableSave } from '../../../helpers';
 
-export function updateDateTimeEnd( dateTime, setState = null ) {
-	validateDateTimeEnd( dateTime );
+export function updateDateTimeEnd(dateTime, setState = null) {
+	validateDateTimeEnd(dateTime);
 
 	// eslint-disable-next-line no-undef
 	GatherPress.event_datetime.datetime_end = dateTime;
 
-	this.setState( {
+	this.setState({
 		dateTime,
-	} );
+	});
 
-	if ( null !== setState ) {
-		setState( { dateTime } );
+	if (null !== setState) {
+		setState({ dateTime });
 	}
 
 	const payload = {
 		setDateTimeEnd: dateTime,
 	};
 
-	Broadcaster( payload );
+	Broadcaster(payload);
 	enableSave();
 }
 
@@ -50,15 +51,15 @@ export function getDateTimeEnd() {
 
 export function hasEventPastNotice() {
 	const id = 'gp_event_past';
-	const notices = wp.data.dispatch( 'core/notices' );
+	const notices = wp.data.dispatch('core/notices');
 	const eventPastStatus = hasEventPast();
 
-	notices.removeNotice( id );
+	notices.removeNotice(id);
 
-	if ( eventPastStatus ) {
+	if (eventPastStatus) {
 		notices.createNotice(
 			'warning',
-			__( 'This event has already past.', 'gatherpress' ),
+			__('This event has already past.', 'gatherpress'),
 			{
 				id,
 				isDismissible: true,
@@ -68,8 +69,8 @@ export function hasEventPastNotice() {
 }
 
 export class DateTimeEndLabel extends Component {
-	constructor( props ) {
-		super( props );
+	constructor(props) {
+		super(props);
 
 		this.state = {
 			// eslint-disable-next-line no-undef
@@ -81,8 +82,8 @@ export class DateTimeEndLabel extends Component {
 		this.updateDateTimeEnd = updateDateTimeEnd;
 		this.getDateTimeEnd = getDateTimeEnd;
 
-		updateDateTimeEnd = updateDateTimeEnd.bind( this );
-		getDateTimeEnd = getDateTimeEnd.bind( this );
+		updateDateTimeEnd = updateDateTimeEnd.bind(this);
+		getDateTimeEnd = getDateTimeEnd.bind(this);
 
 		hasEventPastNotice();
 	}
@@ -97,10 +98,10 @@ export class DateTimeEndLabel extends Component {
 	}
 
 	render() {
-		const settings = __experimentalGetSettings();
+		const settings = getSettings();
 
 		return dateI18n(
-			`${ settings.formats.date } ${ settings.formats.time }`,
+			`${settings.formats.date} ${settings.formats.time}`,
 			this.state.dateTime,
 		);
 	}
