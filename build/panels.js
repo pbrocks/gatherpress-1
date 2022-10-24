@@ -112,15 +112,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/data */ "@wordpress/data");
-/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_data__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _wordpress_date__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/date */ "@wordpress/date");
-/* harmony import */ var _wordpress_date__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_date__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _helpers_broadcasting__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../../helpers/broadcasting */ "./src/helpers/broadcasting.js");
-/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../helpers */ "./src/panels/event-settings/datetime/helpers.js");
-/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../helpers */ "./src/panels/helpers.js");
+/* harmony import */ var _wordpress_date__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/date */ "@wordpress/date");
+/* harmony import */ var _wordpress_date__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_date__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _helpers_broadcasting__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../helpers/broadcasting */ "./src/helpers/broadcasting.js");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../helpers */ "./src/panels/event-settings/datetime/helpers.js");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../helpers */ "./src/panels/helpers.js");
 /**
  * External dependencies.
  */
@@ -129,7 +127,6 @@ __webpack_require__.r(__webpack_exports__);
  * WordPress dependencies.
  */
 // eslint-disable-next-line @wordpress/no-unsafe-wp-apis
-
 
 
 
@@ -142,7 +139,7 @@ __webpack_require__.r(__webpack_exports__);
 
 function updateDateTimeEnd(dateTime) {
   let setState = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-  (0,_helpers__WEBPACK_IMPORTED_MODULE_5__.validateDateTimeEnd)(dateTime); // eslint-disable-next-line no-undef
+  (0,_helpers__WEBPACK_IMPORTED_MODULE_4__.validateDateTimeEnd)(dateTime); // eslint-disable-next-line no-undef
 
   GatherPress.event_datetime.datetime_end = dateTime;
   this.setState({
@@ -158,8 +155,8 @@ function updateDateTimeEnd(dateTime) {
   const payload = {
     setDateTimeEnd: dateTime
   };
-  (0,_helpers_broadcasting__WEBPACK_IMPORTED_MODULE_4__.Broadcaster)(payload);
-  (0,_helpers__WEBPACK_IMPORTED_MODULE_6__.enableSave)();
+  (0,_helpers_broadcasting__WEBPACK_IMPORTED_MODULE_3__.Broadcaster)(payload);
+  (0,_helpers__WEBPACK_IMPORTED_MODULE_5__.enableSave)();
 }
 function getDateTimeEnd() {
   // eslint-disable-next-line no-undef
@@ -170,11 +167,11 @@ function getDateTimeEnd() {
 function hasEventPastNotice() {
   const id = 'gp_event_past';
   const notices = wp.data.dispatch('core/notices');
-  const eventPastStatus = (0,_helpers__WEBPACK_IMPORTED_MODULE_6__.hasEventPast)();
+  const eventPastStatus = (0,_helpers__WEBPACK_IMPORTED_MODULE_5__.hasEventPast)();
   notices.removeNotice(id);
 
   if (eventPastStatus) {
-    notices.createNotice('warning', (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('This event has already past.', 'gatherpress'), {
+    notices.createNotice('warning', (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('This event has already past.', 'gatherpress'), {
       id,
       isDismissible: true
     });
@@ -207,8 +204,9 @@ class DateTimeEndLabel extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
   }
 
   render() {
-    const settings = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_1__.getSettings)();
-    return (0,_wordpress_date__WEBPACK_IMPORTED_MODULE_2__.dateI18n)(`${settings.formats.date} ${settings.formats.time}`, this.state.dateTime);
+    const settings = (0,_wordpress_date__WEBPACK_IMPORTED_MODULE_1__.__experimentalGetSettings)();
+
+    return (0,_wordpress_date__WEBPACK_IMPORTED_MODULE_1__.dateI18n)(`${settings.formats.date} ${settings.formats.time}`, this.state.dateTime);
   }
 
 }
