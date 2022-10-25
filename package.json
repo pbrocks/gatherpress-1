@@ -33,6 +33,7 @@
 		"@wordpress/icons": "^9.11.0",
 		"classnames": "^2.3.2",
 		"html-react-parser": "^3.0.4",
-		"lodash": "^4.17.21"
+		"lodash": "^4.17.21",
+		"react-modal": "^3.16.1"
 	}
 }
