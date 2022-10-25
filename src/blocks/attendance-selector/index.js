@@ -6,14 +6,6 @@ import edit from './edit';
 import metadata from './block.json';
 
 registerBlockType( metadata, {
-	apiVersion: 2,
-	title: __( 'Attendance Selector', 'gatherpress' ),
-	icon: 'groups',
-	category: 'gatherpress',
-	attributes: {
-		content: { type: 'string' },
-		color: { type: 'string' },
-	},
 	edit,
 	save: () => null,
 } );

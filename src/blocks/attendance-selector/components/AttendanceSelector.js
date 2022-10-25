@@ -185,7 +185,6 @@ const AttendanceSelector = ( { eventId, currentUser = '', type } ) => {
 						{ getButtonText( attendanceStatus ) }
 					</a>
 				</div>
-				<MyModal />
 				<Modal
 					isOpen={ modalIsOpen }
 					onRequestClose={ closeModal }
