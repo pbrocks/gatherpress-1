@@ -7,7 +7,7 @@ import { Component } from 'react';
  * WordPress dependencies.
  */
 // eslint-disable-next-line @wordpress/no-unsafe-wp-apis
-import { getSettings } from '@wordpress/data';
+import { __experimentalGetSettings } from '@wordpress/date';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 
@@ -98,7 +98,7 @@ export class DateTimeEndLabel extends Component {
 	}
 
 	render() {
-		const settings = getSettings();
+		const settings = __experimentalGetSettings();
 
 		return dateI18n(
 			`${settings.formats.date} ${settings.formats.time}`,

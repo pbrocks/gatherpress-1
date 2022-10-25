@@ -88,7 +88,7 @@ const Edit = ( props ) => {
 
 	const imageOptions = [ { label: 'Default', value: 'default' }, { label: 'Thumbnail', value: 'thumbnail' }, { label: 'Large', value: 'large' } ];
 	return (
-		<div { ...blockProps }>
+		<>
 			<InspectorControls>
 				<PanelBody>
 					<p>{ __( 'Event List type', 'gatherpress' ) }</p>
@@ -237,13 +237,15 @@ const Edit = ( props ) => {
 					/>
 				</PanelBody>
 			</InspectorControls>
-			<EventsList
-				eventOptions={ attributes.eventOptions }
-				maxNumberOfEvents={ attributes.maxNumberOfEvents }
-				type={ attributes.type }
-				topics={ attributes.topics }
-			/>
-		</div>
+			<div {...blockProps}>
+				<EventsList
+					eventOptions={ attributes.eventOptions }
+					maxNumberOfEvents={ attributes.maxNumberOfEvents }
+					type={ attributes.type }
+					topics={ attributes.topics }
+				/>
+			</div>
+		</>
 	);
 };
 
