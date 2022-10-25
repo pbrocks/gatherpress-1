@@ -9,7 +9,7 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal Dependencies.
  */
-import { Broadcaster } from '../helpers/broadcasting';
+import { Broadcaster } from '../../../helpers/broadcasting';
 import AttendeeResponse from './AttendeeResponse';
 
 const MyModal = () => {
