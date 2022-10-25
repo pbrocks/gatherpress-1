@@ -7,18 +7,18 @@
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
 
-export const PluginDocumentSettingPanelDemo = () => (
+export const PBrocksDocumentSettingPanel = () => (
 	<PluginDocumentSettingPanel
-		name="custom-panel"
-		title="Custom Panel"
-		className="custom-panel"
+		name="pbrocks-panel"
+		title="PBrocks Panel"
+		className="pbrocks-panel"
 	>
-		Custom Panel Contents
+		PBrocks Panel Contents
 	</PluginDocumentSettingPanel>
 );
 
-registerPlugin('plugin-document-setting-panel-demo', {
-	render: PluginDocumentSettingPanelDemo,
+registerPlugin('pbrocks-document-setting-panel-example', {
+	render: PBrocksDocumentSettingPanel,
 	icon: 'palmtree',
 });
 

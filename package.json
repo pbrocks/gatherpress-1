@@ -1,6 +1,6 @@
 {
 	"name": "gatherpress",
-	"version": "1.2.0",
+	"version": "11.2.0",
 	"description": "ES6 Assets for GatherPress including Blocks, Filters, and Plugins",
 	"author": "The GatherPress Contributors",
 	"license": "GPL-2.0-or-later",

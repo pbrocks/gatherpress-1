@@ -186,7 +186,7 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "PluginDocumentSettingPanelDemo": function() { return /* binding */ PluginDocumentSettingPanelDemo; }
+/* harmony export */   "PBrocksDocumentSettingPanel": function() { return /* binding */ PBrocksDocumentSettingPanel; }
 /* harmony export */ });
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
@@ -203,13 +203,13 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const PluginDocumentSettingPanelDemo = () => (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_edit_post__WEBPACK_IMPORTED_MODULE_2__.PluginDocumentSettingPanel, {
-  name: "custom-panel",
-  title: "Custom Panel",
-  className: "custom-panel"
-}, "Custom Panel Contents");
-(0,_wordpress_plugins__WEBPACK_IMPORTED_MODULE_1__.registerPlugin)('plugin-document-setting-panel-demo', {
-  render: PluginDocumentSettingPanelDemo,
+const PBrocksDocumentSettingPanel = () => (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_edit_post__WEBPACK_IMPORTED_MODULE_2__.PluginDocumentSettingPanel, {
+  name: "pbrocks-panel",
+  title: "PBrocks Panel",
+  className: "pbrocks-panel"
+}, "PBrocks Panel Contents");
+(0,_wordpress_plugins__WEBPACK_IMPORTED_MODULE_1__.registerPlugin)('pbrocks-document-setting-panel-example', {
+  render: PBrocksDocumentSettingPanel,
   icon: 'palmtree'
 });
 

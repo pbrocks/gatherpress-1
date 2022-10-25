@@ -147,11 +147,11 @@ class Assets {
 	public function block_enqueue_scripts() {
 		$post_id = $GLOBALS['post']->ID ?? 0;
 
-		$asset = plugin_dir_path( GATHERPRESS_CORE_FILE ) . 'assets/build/blocks/initial-time/index.asset.php';
+		$asset = plugin_dir_path( GATHERPRESS_CORE_FILE ) . 'build/blocks/initial-time/index.asset.php';
 
 		wp_enqueue_script(
 			'gatherpress-blocks-object',
-			 plugins_url( 'assets/build/blocks/initial-time/index.js', GATHERPRESS_CORE_FILE ),
+			 plugins_url( 'build/blocks/initial-time/index.js', GATHERPRESS_CORE_FILE ),
 			$asset['dependencies'],
 			$asset['version'],
 			true

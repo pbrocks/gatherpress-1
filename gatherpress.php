@@ -42,40 +42,40 @@ add_action( 'init', 'gatherpress_different_blocks_init' );
  */
 function gatherpress_different_blocks_init() {
 	register_block_type(
-		__DIR__ . '/assets/build/blocks/add-to-calendar',
+		__DIR__ . '/build/blocks/add-to-calendar',
 		array(
 			'render_callback' => 'gatherpress_render_add_to_calendar',
 		)
 	);
 	register_block_type(
-		__DIR__ . '/assets/build/blocks/attendance-list'
+		__DIR__ . '/build/blocks/attendance-list'
 	);
 	register_block_type(
-		__DIR__ . '/assets/build/blocks/attendance-selector'
+		__DIR__ . '/build/blocks/attendance-selector'
 	);
 	register_block_type(
-		__DIR__ . '/assets/build/blocks/initial-time'
+		__DIR__ . '/build/blocks/initial-time'
 	);
 	register_block_type(
-		__DIR__ . '/assets/build/blocks/end-time'
+		__DIR__ . '/build/blocks/end-time'
 	);
 	register_block_type(
-		__DIR__ . '/assets/build/blocks/event-date',
+		__DIR__ . '/build/blocks/event-date',
 		array(
 			'render_callback' => 'gatherpress_render_event_date',
 		)
 	);
 	register_block_type(
-		__DIR__ . '/assets/build/blocks/time-template'
+		__DIR__ . '/build/blocks/time-template'
 	);
 	register_block_type(
-		__DIR__ . '/assets/build/blocks/venue',
+		__DIR__ . '/build/blocks/venue',
 		array(
 			'render_callback' => 'gatherpress_render_venue',
 		)
 	);
 	register_block_type(
-		__DIR__ . '/assets/build/blocks/venue-information',
+		__DIR__ . '/build/blocks/venue-information',
 		array(
 			'render_callback' => 'gatherpress_render_venue_information',
 		)
@@ -93,7 +93,7 @@ function gatherpress_different_blocks_init() {
  */
 function gatherpress_render_add_to_calendar( $attributes, $content, $block ) {
 	ob_start();
-	require plugin_dir_path( __FILE__ ) . '/assets/build/blocks/add-to-calendar/add-to-calendar.php';
+	require plugin_dir_path( __FILE__ ) . '/build/blocks/add-to-calendar/add-to-calendar.php';
 	return ob_get_clean();
 }
 
@@ -108,7 +108,7 @@ function gatherpress_render_add_to_calendar( $attributes, $content, $block ) {
  */
 function gatherpress_render_event_date( $attributes, $content, $block ) {
 	ob_start();
-	require plugin_dir_path( __FILE__ ) . '/assets/build/blocks/event-date/event-date.php';
+	require plugin_dir_path( __FILE__ ) . '/build/blocks/event-date/event-date.php';
 	return ob_get_clean();
 }
 
@@ -123,7 +123,7 @@ function gatherpress_render_event_date( $attributes, $content, $block ) {
  */
 function gatherpress_render_venue( $attributes, $content, $block ) {
 	ob_start();
-	require plugin_dir_path( __FILE__ ) . '/assets/build/blocks/venue/venue.php';
+	require plugin_dir_path( __FILE__ ) . '/build/blocks/venue/venue.php';
 	return ob_get_clean();
 }
 
@@ -138,7 +138,7 @@ function gatherpress_render_venue( $attributes, $content, $block ) {
  */
 function gatherpress_render_venue_information( $attributes, $content, $block ) {
 	ob_start();
-	require plugin_dir_path( __FILE__ ) . '/assets/build/blocks/venue-information/venue-information.php';
+	require plugin_dir_path( __FILE__ ) . '/build/blocks/venue-information/venue-information.php';
 	return ob_get_clean();
 }
 
