@@ -1,6 +1,53 @@
 /******/ (function() { // webpackBootstrap
-/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
+
+/***/ "./src/blocks/add-to-calendar/add-to-calendar.js":
+/*!*******************************************************!*\
+  !*** ./src/blocks/add-to-calendar/add-to-calendar.js ***!
+  \*******************************************************/
+/***/ (function() {
+
+/**
+ * Toggle to Show/Hide Calendar options.
+ *
+ * @param {TouchEvent} e Event.
+ */
+const addToCalendarToggle = e => {
+  e.preventDefault();
+  const currentListDisplay = e.target.nextElementSibling.style.display;
+  const lists = document.querySelectorAll('.gp-add-to-calendar__list');
+
+  for (let i = 0; i < lists.length; i++) {
+    lists[i].style.display = 'none';
+  }
+
+  e.target.nextElementSibling.style.display = 'none' === currentListDisplay ? 'flex' : 'none';
+};
+/**
+ * Initialize all Add To Calendar blocks.
+ */
+
+
+const addToCalendarInit = () => {
+  const containers = document.querySelectorAll('.gp-add-to-calendar');
+
+  for (let i = 0; i < containers.length; i++) {
+    containers[i].querySelector('.gp-add-to-calendar__init').addEventListener('click', addToCalendarToggle, false);
+    document.addEventListener('click', _ref => {
+      let {
+        target
+      } = _ref;
+
+      if (!target.closest('.gp-add-to-calendar')) {
+        containers[i].querySelector('.gp-add-to-calendar__list').style.display = 'none';
+      }
+    });
+  }
+};
+
+addToCalendarInit();
+
+/***/ }),
 
 /***/ "./src/blocks/add-to-calendar/edit.js":
 /*!********************************************!*\
@@ -8,6 +55,7 @@
   \********************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
@@ -52,13 +100,15 @@ const Edit = () => {
   \*********************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_blocks__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/blocks */ "@wordpress/blocks");
 /* harmony import */ var _wordpress_blocks__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_blocks__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _edit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./edit */ "./src/blocks/add-to-calendar/edit.js");
-/* harmony import */ var _save__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./save */ "./src/blocks/add-to-calendar/save.js");
-/* harmony import */ var _block_json__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./block.json */ "./src/blocks/add-to-calendar/block.json");
-/* harmony import */ var _style_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./style.scss */ "./src/blocks/add-to-calendar/style.scss");
+/* harmony import */ var _block_json__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./block.json */ "./src/blocks/add-to-calendar/block.json");
+/* harmony import */ var _style_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./style.scss */ "./src/blocks/add-to-calendar/style.scss");
+/* harmony import */ var _add_to_calendar__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./add-to-calendar */ "./src/blocks/add-to-calendar/add-to-calendar.js");
+/* harmony import */ var _add_to_calendar__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_add_to_calendar__WEBPACK_IMPORTED_MODULE_4__);
 /**
  * WordPress dependencies.
  */
@@ -71,82 +121,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-(0,_wordpress_blocks__WEBPACK_IMPORTED_MODULE_0__.registerBlockType)(_block_json__WEBPACK_IMPORTED_MODULE_3__, {
+(0,_wordpress_blocks__WEBPACK_IMPORTED_MODULE_0__.registerBlockType)(_block_json__WEBPACK_IMPORTED_MODULE_2__, {
   edit: _edit__WEBPACK_IMPORTED_MODULE_1__["default"],
-  save: _save__WEBPACK_IMPORTED_MODULE_2__["default"]
+  save: () => null
 });
-
-/***/ }),
-
-/***/ "./src/blocks/add-to-calendar/save.js":
-/*!********************************************!*\
-  !*** ./src/blocks/add-to-calendar/save.js ***!
-  \********************************************/
-/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/block-editor */ "@wordpress/block-editor");
-/* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__);
-
-
-/**
- * WordPress dependencies.
- */
-
-
-
-
-const Save = () => {
-  const blockProps = _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.useBlockProps.save();
-  /**
-   * Toggle to Show/Hide Calendar options.
-   *
-   * @param {TouchEvent} e Event.
-   */
-
-  const addToCalendarToggle = e => {
-    e.preventDefault();
-    const currentListDisplay = e.target.nextElementSibling.style.display;
-    const lists = document.querySelectorAll('.gp-add-to-calendar__list');
-
-    for (let i = 0; i < lists.length; i++) {
-      lists[i].style.display = 'none';
-    }
-
-    e.target.nextElementSibling.style.display = 'none' === currentListDisplay ? 'flex' : 'none';
-  };
-  /**
-   * Initialize all Add To Calendar blocks.
-   */
-
-
-  const addToCalendarInit = () => {
-    const containers = document.querySelectorAll('.gp-add-to-calendar');
-
-    for (let i = 0; i < containers.length; i++) {
-      containers[i].querySelector('.gp-add-to-calendar__init').addEventListener('click', addToCalendarToggle, false);
-      document.addEventListener('click', _ref => {
-        let {
-          target
-        } = _ref;
-
-        if (!target.closest('.gp-add-to-calendar')) {
-          containers[i].querySelector('.gp-add-to-calendar__list').style.display = 'none';
-        }
-      });
-    }
-  };
-
-  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", blockProps, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("addToCalendarInit", null));
-};
-
-/* harmony default export */ __webpack_exports__["default"] = (Save);
 
 /***/ }),
 
@@ -156,6 +134,7 @@ const Save = () => {
   \***********************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 // extracted by mini-css-extract-plugin
 
@@ -168,6 +147,7 @@ __webpack_require__.r(__webpack_exports__);
   \*************************************/
 /***/ (function(module) {
 
+"use strict";
 module.exports = window["wp"]["blockEditor"];
 
 /***/ }),
@@ -178,6 +158,7 @@ module.exports = window["wp"]["blockEditor"];
   \********************************/
 /***/ (function(module) {
 
+"use strict";
 module.exports = window["wp"]["blocks"];
 
 /***/ }),
@@ -188,6 +169,7 @@ module.exports = window["wp"]["blocks"];
   \************************************/
 /***/ (function(module) {
 
+"use strict";
 module.exports = window["wp"]["components"];
 
 /***/ }),
@@ -198,6 +180,7 @@ module.exports = window["wp"]["components"];
   \*********************************/
 /***/ (function(module) {
 
+"use strict";
 module.exports = window["wp"]["element"];
 
 /***/ }),
@@ -208,6 +191,7 @@ module.exports = window["wp"]["element"];
   \******************************/
 /***/ (function(module) {
 
+"use strict";
 module.exports = window["wp"]["i18n"];
 
 /***/ }),
@@ -218,6 +202,7 @@ module.exports = window["wp"]["i18n"];
   \***********************************************/
 /***/ (function(module) {
 
+"use strict";
 module.exports = JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":2,"name":"gatherpress/add-to-calendar","version":"0.1.1","title":"Add to Calendar","category":"gatherpress","icon":"calendar","example":{},"description":"An applet block to add the event to your preferred calendar.","attributes":{"blockId":{"type":"string"}},"supports":{"html":false},"textdomain":"gatherpress","editorScript":"file:./index.js","style":"file:./style-index.css"}');
 
 /***/ })

@@ -9,6 +9,8 @@
 
 use GatherPress\Core\Event;
 
+wp_enqueue_script( 'add-to-calendar-frontend' );
+
 $gatherpress_event = new Event( get_the_ID() );
 ?>
 <div class="gp-add-to-calendar">

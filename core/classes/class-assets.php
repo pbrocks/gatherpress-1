@@ -19,8 +19,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class Assets.
  */
 class Assets {
-
-
 	use Singleton;
 
 	/**
@@ -57,9 +55,23 @@ class Assets {
 	protected function setup_hooks() {
 		// add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		// add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ), 10, 1 );
+		add_action( 'wp_enqueue_scripts', array( $this, 'add_to_calendar_frontend_scripts' ) );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'block_enqueue_scripts' ) );
 	}
 
+
+	/**
+	 * Enqueue frontend scripts.
+	 */
+	public function  add_to_calendar_frontend_scripts() {
+		wp_register_script(
+			'add-to-calendar-frontend',
+			plugins_url( 'js/add-to-calendar.js', __FILE__ ),
+			array(),
+			filemtime( __DIR__ . '/js/add-to-calendar.js' ),
+			true
+		);
+	}
 	/**
 	 * Enqueue frontend styles and scripts.
 	 */
