@@ -36,7 +36,17 @@ const MyModal = () => {
 		</>
 	);
 };
+import { Animate, Notice } from '@wordpress/components';
 
+const MyAnimatedNotice = () => (
+	<Animate type="slide-in" options={{ origin: 'top' }}>
+		{({ className }) => (
+			<Notice className={className} status="success">
+				<p>Animation finished.</p>
+			</Notice>
+		)}
+	</Animate>
+);
 /**
  * The edit function describes the structure of your block in the context of the
  * editor. This represents what the editor will render when the block is used.
@@ -59,6 +69,7 @@ export default function Edit({ attributes, setAttributes }) {
 				onChange={(val) => setAttributes({ message: val })}
 			/>
 			<MyModal />
+			<MyAnimatedNotice />
 		</div>
 	);
 }
