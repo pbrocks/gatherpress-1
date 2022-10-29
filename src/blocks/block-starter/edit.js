@@ -3,7 +3,8 @@
  *
  * @see https://developer.wordpress.org/block-editor/packages/packages-components/
  */
-import { TextControl } from '@wordpress/components';
+import { Button, Modal, TextControl } from '@wordpress/components';
+import { useState } from '@wordpress/element';
 
 /**
  * React hook that is used to mark the block wrapper element.
@@ -14,6 +15,27 @@ import { TextControl } from '@wordpress/components';
 import { useBlockProps } from '@wordpress/block-editor';
 
 import './editor.scss';
+
+const MyModal = () => {
+	const [isOpen, setOpen] = useState(false);
+	const openModal = () => setOpen(true);
+	const closeModal = () => setOpen(false);
+
+	return (
+		<>
+			<Button variant="secondary" onClick={openModal}>
+				Open Modal
+			</Button>
+			{isOpen && (
+				<Modal title="This is my modal" onRequestClose={closeModal}>
+					<Button variant="secondary" onClick={closeModal}>
+						My custom close button
+					</Button>
+				</Modal>
+			)}
+		</>
+	);
+};
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -36,6 +58,7 @@ export default function Edit({ attributes, setAttributes }) {
 				value={attributes.message}
 				onChange={(val) => setAttributes({ message: val })}
 			/>
+			<MyModal />
 		</div>
 	);
 }

@@ -3,9 +3,6 @@
  */
 import { registerBlockType } from '@wordpress/blocks';
 
-import './plugin-2';
-import './maybe-deny-list';
-
 /**
  * Internal dependencies.
  */
@@ -15,7 +12,7 @@ import metadata from './block.json';
 
 import './style.scss';
 
-registerBlockType( metadata, {
+registerBlockType(metadata, {
 	edit,
 	save: () => null,
-} );
+});

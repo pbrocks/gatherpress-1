@@ -39,7 +39,7 @@ function gatherpress_gp_blocks_init() {
 	register_block_type(
 		__DIR__ . '/build/blocks/add-to-calendar',
 		[
-			'render_callback' => 'gp_blocks_add_to_calendar_render_callback'
+			'render_callback' => 'gp_blocks_add_to_calendar_render_callback',
 		]
 	);
 	register_block_type(
@@ -49,21 +49,30 @@ function gatherpress_gp_blocks_init() {
 		__DIR__ . '/build/blocks/attendance-selector'
 	);
 	register_block_type(
+		__DIR__ . '/build/blocks/block-starter'
+	);
+	register_block_type(
+		__DIR__ . '/build/blocks/example-dynamic',
+		[
+			'render_callback' => 'gp_blocks_example_dynamic_render_callback',
+		]
+	);
+	register_block_type(
 		__DIR__ . '/build/blocks/event-date',
 		[
-			'render_callback' => 'gp_blocks_event_date_render_callback'
+			'render_callback' => 'gp_blocks_event_date_render_callback',
 		]
 	);
 	register_block_type(
 		__DIR__ . '/build/blocks/events-list',
 		[
-			'render_callback' => 'gp_blocks_events_list_render_callback'
+			'render_callback' => 'gp_blocks_events_list_render_callback',
 		]
 	);
 	register_block_type(
 		__DIR__ . '/build/blocks/venue',
 		[
-			'render_callback' => 'gp_blocks_venue_render_callback'
+			'render_callback' => 'gp_blocks_venue_render_callback',
 		]
 	);
 	register_block_type(
@@ -159,7 +168,7 @@ function gp_blocks_event_date_render_callback( $attributes, $content, $block ) {
 function gp_blocks_events_list_render_callback( $attributes, $content, $block ) {
 	ob_start();
 	echo '<h3>build/blocks/events-list/sample.php</h3>';
-	echo  $content;
+	echo $content;
 	return ob_get_clean();
 }
 
@@ -174,7 +183,7 @@ function gp_blocks_events_list_render_callback( $attributes, $content, $block ) 
  */
 function gp_blocks_venue_render_callback( $attributes, $content, $block ) {
 	ob_start();
-	$timezone = get_option('timezone_string');
+	$timezone = get_option( 'timezone_string' );
 	if ( ! $timezone ) {
 		$timezone = ' / timezone unset';
 	}
@@ -268,22 +277,22 @@ function wplancpa_2019_show_block_type( $block_content, $block ) {
 	return $block_content;
 }
 
-add_action('admin_notices', 'timezone_check_admin_notice');
+add_action( 'admin_notices', 'timezone_check_admin_notice' );
 /**
  * display custom admin notice function
  *
  * @return void
  */
 function timezone_check_admin_notice() {
-	$timezone = get_option('timezone_string');
+	$timezone = get_option( 'timezone_string' );
 	if ( $timezone ) {
 		return;
 	}
 	?>
 	<div class="notice notice-error is-dismissible">
-		<p><?php _e('Please set your timezone in order to ensure proper GatherPress settings!', 'gatherpress'); ?></p>
+		<p><?php _e( 'Please set your timezone in order to ensure proper GatherPress settings!', 'gatherpress' ); ?></p>
 	</div>
-<?php
+	<?php
 }
 
 add_action( 'enqueue_block_editor_assets', 'maybe_deny_list_blocks' );
@@ -293,39 +302,39 @@ add_action( 'enqueue_block_editor_assets', 'maybe_deny_list_blocks' );
  * @return void
  */
 function maybe_deny_list_blocks() {
-    wp_register_script(
-        'post-deny-list-blocks',
-        plugins_url( 'core/js/post-deny-list.js', __FILE__ ),
-        array(
+	wp_register_script(
+		'post-deny-list-blocks',
+		plugins_url( 'core/js/post-deny-list.js', __FILE__ ),
+		array(
 			'wp-blocks',
 			'wp-dom-ready',
-			'wp-edit-post'
+			'wp-edit-post',
 		),
-		filemtime( plugin_dir_path( __FILE__ ) . 'core/js/post-deny-list.js'),
+		filemtime( plugin_dir_path( __FILE__ ) . 'core/js/post-deny-list.js' ),
 		true
-    );
-    wp_register_script(
-        'event-deny-list-blocks',
-        plugins_url( 'core/js/event-deny-list.js', __FILE__ ),
-        array(
+	);
+	wp_register_script(
+		'event-deny-list-blocks',
+		plugins_url( 'core/js/event-deny-list.js', __FILE__ ),
+		array(
 			'wp-blocks',
 			'wp-dom-ready',
-			'wp-edit-post'
+			'wp-edit-post',
 		),
-		filemtime( plugin_dir_path( __FILE__ ) . 'core/js/event-deny-list.js'),
+		filemtime( plugin_dir_path( __FILE__ ) . 'core/js/event-deny-list.js' ),
 		true
-    );
-    wp_register_script(
-        'venue-deny-list-blocks',
-        plugins_url( 'core/js/venue-deny-list.js', __FILE__ ),
-        array(
+	);
+	wp_register_script(
+		'venue-deny-list-blocks',
+		plugins_url( 'core/js/venue-deny-list.js', __FILE__ ),
+		array(
 			'wp-blocks',
 			'wp-dom-ready',
-			'wp-edit-post'
+			'wp-edit-post',
 		),
-		filemtime( plugin_dir_path( __FILE__ ) . 'core/js/venue-deny-list.js'),
+		filemtime( plugin_dir_path( __FILE__ ) . 'core/js/venue-deny-list.js' ),
 		true
-    );
+	);
 	if ( 'post' === get_post_type() || 'page' === get_post_type() ) {
 		wp_enqueue_script( 'post-deny-list-blocks' );
 	}

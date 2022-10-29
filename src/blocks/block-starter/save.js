@@ -6,6 +6,29 @@
  */
 import { useBlockProps } from '@wordpress/block-editor';
 
+import { Button, Modal, TextControl } from '@wordpress/components';
+import { useState } from '@wordpress/element';
+
+const MyModal = () => {
+	const [isOpen, setOpen] = useState(false);
+	const openModal = () => setOpen(true);
+	const closeModal = () => setOpen(false);
+
+	return (
+		<>
+			<Button variant="secondary" onClick={openModal}>
+				Open Modal
+			</Button>
+			{isOpen && (
+				<Modal title="This is my modal" onRequestClose={closeModal}>
+					<Button variant="secondary" onClick={closeModal}>
+						My custom close button
+					</Button>
+				</Modal>
+			)}
+		</>
+	);
+};
 /**
  * The save function defines the way in which the different attributes should
  * be combined into the final markup, which is then serialized by the block
@@ -20,8 +43,9 @@ import { useBlockProps } from '@wordpress/block-editor';
 export default function save({ attributes }) {
 	const blockPropsSave = useBlockProps.save();
 	return (
-        <div {...blockPropsSave}>
-            {attributes.message}
-        </div>
-    );
+		<div {...blockPropsSave}>
+			<p>{attributes.message}</p>
+			<MyModal.Content />
+		</div>
+	);
 }
