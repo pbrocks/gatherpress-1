@@ -145,7 +145,7 @@ class Assets {
 	 *
 	 * @param int $post_id Post ID for an event.
 	 *
-	 * @return array
+	 * @return string
 	 */
 	protected function localize( int $post_id ): string {
 		$event    = new Event( $post_id );
