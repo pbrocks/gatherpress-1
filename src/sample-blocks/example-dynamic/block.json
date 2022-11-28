@@ -1,0 +1,22 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 2,
+	"name": "gaatherpress/example-dynamic",
+	"version": "0.1.0",
+	"title": "Example Dynamic",
+	"category": "gatherpress-sample",
+	"icon": {
+		"src": "carrot",
+		"background": "lightslategray",
+		"foreground": "white"
+	},
+	"description": "Blocks scaffolded with Create Block tool.",
+	"supports": {
+		"html": false
+	},
+	"example": {},
+	"textdomain": "gatherpress",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css"
+}
