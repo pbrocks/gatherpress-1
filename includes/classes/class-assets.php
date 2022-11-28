@@ -56,8 +56,22 @@ class Assets {
 	protected function setup_hooks() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ), 10, 1 );
-		add_action( 'enqueue_block_editor_assets', array( $this, 'block_enqueue_scripts' ), 9 );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'maybe_deny_blocks_list' ) );
+		//The 9 priority must be used so the global object loads before the build scripts
+		add_action( 'enqueue_block_editor_assets', array( $this, 'add_global_object' ), 9 );
+		add_action( 'enqueue_block_assets', array( $this, 'add_global_object' ), 9 );
+	}
+	
+	/**
+	 * Localize the global GatherPress js object for use in the build scripts.
+	 */
+	public function add_global_object() {
+		$post_id = get_the_ID() ?? 0;
+		?>
+		<script>
+		var GatherPress = <?php echo $this->localize( $post_id ); ?>
+		</script>
+		<?php
 	}
 
 	/**
@@ -74,12 +88,6 @@ class Assets {
 			$asset['dependencies'],
 			$asset['version'],
 			true
-		);
-
-		wp_localize_script(
-			'gatherpress-attendance-selector',
-			'GatherPress',
-			$this->localize( $post_id )
 		);
 	}
 
@@ -133,40 +141,17 @@ class Assets {
 	}
 
 	/**
-	 * Enqueue block styles and scripts.
-	 */
-	public function block_enqueue_scripts() {
-		$post_id = $GLOBALS['post']->ID ?? 0;
-		$event   = new Event( $post_id );
-		$post_id = get_the_ID() ?? 0;
-
-		$asset = include( plugin_dir_path( GATHERPRESS_CORE_FILE ) . 'build/blocks/event-date/index.asset.php' );
-		wp_enqueue_script(
-			'gatherpress-blocks-backend',
-			GATHERPRESS_CORE_URL . 'build/blocks/event-date/index.js',
-			$asset['dependencies'],
-			$asset['version'],
-			false
-		);
-
-		wp_localize_script(
-			'gatherpress-blocks-backend',
-			'GatherPress',
-			$this->localize( $post_id )
-		);
-	}
-
-	/**
 	 * Localize data to JavaScript.
 	 *
 	 * @param int $post_id Post ID for an event.
 	 *
 	 * @return array
 	 */
-	protected function localize( int $post_id ): array {
+	protected function localize( int $post_id ): string {
 		$event    = new Event( $post_id );
 		$settings = Settings::get_instance();
-		return array(
+		return json_encode(
+			[
 			'attendees'        => ( $event->attendee ) ? $event->attendee->attendees() : array(), // @todo cleanup
 			'current_user'     => ( $event->attendee && $event->attendee->get( get_current_user_id() ) ) ? $event->attendee->get( get_current_user_id() ) : '', // @todo cleanup
 			'event_rest_api'   => home_url( 'wp-json/gatherpress/v1/event' ),
@@ -177,9 +162,10 @@ class Assets {
 			'event_datetime'   => $event->get_datetime(),
 			'event_announced'  => ( get_post_meta( $post_id, 'gp-event-announce', true ) ) ? 1 : 0,
 			'default_timezone' => sanitize_text_field( wp_timezone_string() ),
-			'settings'         => array(
+			'settings'         => [
 				// @todo settings to come...
-			),
+				]
+			]
 		);
 	}
 
