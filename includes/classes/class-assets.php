@@ -145,7 +145,8 @@ class Assets {
 			'gatherpress-blocks-backend',
 			GATHERPRESS_CORE_URL . 'build/blocks/event-date/index.js',
 			$asset['dependencies'],
-			$asset['version']
+			$asset['version'],
+			false
 		);
 
 		wp_localize_script(
