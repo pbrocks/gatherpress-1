@@ -150,7 +150,7 @@ class Assets {
 		$event    = new Event( $post_id );
 		$settings = Settings::get_instance();
 		return json_encode(
-			[
+			array(
 			'attendees'        => ( $event->attendee ) ? $event->attendee->attendees() : array(), // @todo cleanup
 			'current_user'     => ( $event->attendee && $event->attendee->get( get_current_user_id() ) ) ? $event->attendee->get( get_current_user_id() ) : '', // @todo cleanup
 			'event_rest_api'   => home_url( 'wp-json/gatherpress/v1/event' ),
@@ -161,10 +161,10 @@ class Assets {
 			'event_datetime'   => $event->get_datetime(),
 			'event_announced'  => ( get_post_meta( $post_id, 'gp-event-announce', true ) ) ? 1 : 0,
 			'default_timezone' => sanitize_text_field( wp_timezone_string() ),
-			'settings'         => [
+			'settings'         => array(
 				// @todo settings to come...
-				]
-			]
+				),
+			),
 		);
 	}
 
