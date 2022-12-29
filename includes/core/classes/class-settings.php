@@ -398,8 +398,23 @@ class Settings {
 		if ( ! empty( $option ) && is_array( $option ) ) {
 			return $option;
 		}
+		
+		//Get current options
+		$current_options = get_option( 'gp_general' );
 
-		return $this->get_option_defaults( $sub_page );
+		//Check if they are empty or null/false
+		if ( !$current_options || empty( $current_options ) ) {
+
+			//Grab defaults
+			$defaults = $this->get_option_defaults( $sub_page );
+
+			//If options are empty or false, set the defaults
+			$result = update_option( 'gp_general', $defaults );
+
+			//Grab updated options for returning
+			$current_options = get_option( 'gp_general' );
+		}
+		return $current_options;
 	}
 
 	/**
@@ -421,7 +436,7 @@ class Settings {
 				}
 
 				foreach ( $settings['options'] as $option => $values ) {
-					$defaults[ $section ][ $option ] = $values['default'] ?? '';
+					$defaults[ $section ][ $option ] = $values['field']['options']['default'] ?? '';
 				}
 			}
 		}
