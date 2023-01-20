@@ -12,6 +12,7 @@ import {
 } from '@wordpress/components';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { useEffect } from '@wordpress/element';
+import './editor.scss';
 
 /**
  * Internal dependencies.
