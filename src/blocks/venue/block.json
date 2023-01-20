@@ -9,8 +9,14 @@
 	"example": {},
 	"description": "The venue block.",
 	"attributes": {
-		"blockId": {
-			"type": "string"
+		"venueMap": {
+			"type": "object",
+			"default": {
+				"address": "2214 Rhawn St Phila PA",
+				"phone": "215-722-6128",
+				"webUrl": "",
+				"mapId": ""
+			}
 		},
 		"venueId": {
 			"type": "integer",
@@ -20,6 +26,7 @@
 	"supports": {
 		"html": true
 	},
+	"providesContext": "gatherpress/venueMap",
 	"textdomain": "gatherpress",
 	"editorScript": "file:./index.js",
 	"style": "file:./style-index.css",

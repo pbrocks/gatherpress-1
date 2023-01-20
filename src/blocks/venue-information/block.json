@@ -12,16 +12,20 @@
 		"blockId": {
 			"type": "string"
 		},
-		"phoneNumber": {
-			"type": "string",
-			"default": ""
-		},
-		"website": {
-			"type": "string",
-			"default": ""
-		},
-		"mapId": {
-			"type": "string"
+		"venueMap": {
+			"type": "object",
+			"default": {
+				"address": "2214 Rhawn St Phila PA",
+				"phoneNumber": "215-722-6128",
+				"website": "",
+				"mapId": "",
+				"device": "desktop",
+				"deskHeight": 400,
+				"tabHeight": 300,
+				"mobileHeight": 250,
+				"zoom": 10,
+				"type": "m"
+			}
 		},
 		"align": {
 			"type": "string",
@@ -30,30 +34,6 @@
 		"fullAddress": {
 			"type": "string",
 			"default": "currentLocation"
-		},
-		"zoom": {
-			"type": "number",
-			"default": 10
-		},
-		"type": {
-			"type": "string",
-			"default": "m"
-		},
-		"deskHeight": {
-			"type": "number",
-			"default": 400
-		},
-		"tabHeight": {
-			"type": "number",
-			"default": 300
-		},
-		"mobileHeight": {
-			"type": "number",
-			"default": 250
-		},
-		"device": {
-			"type": "string",
-			"default": "desktop"
 		}
 	},
 	"supports": {
