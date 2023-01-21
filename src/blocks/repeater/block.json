@@ -1,0 +1,23 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 2,
+	"name": "gatherpress/repeater",
+	"version": "0.2",
+	"title": "Repeater",
+	"category": "gatherpress",
+	"icon": "list-view",
+	"example": {},
+	"keywords": "Gutenberg Repeater Field, Repeater, Repeatable",
+	"description": "A block repeater.",
+	"attributes": {
+		"locations": {
+			"type": "array",
+			"default": []
+		}
+	},
+	"supports": {
+		"html": false
+	},
+	"textdomain": "gatherpress",
+	"editorScript": "file:./index.js"
+}

@@ -175,7 +175,7 @@ class Assets {
 			'settings'          => array(
 				// @todo settings to come...
 			),
-			'unregister_blocks' => $this->unregister_blocks(),
+			// 'unregister_blocks' => $this->unregister_blocks(),
 		);
 	}
 

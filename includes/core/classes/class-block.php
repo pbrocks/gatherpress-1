@@ -32,6 +32,7 @@ class Block {
 		'attendance-selector',
 		'event-date',
 		'events-list',
+		'repeater',
 		'venue',
 		'venue-information',
 	);
