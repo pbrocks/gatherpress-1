@@ -1,4 +1,11 @@
+/**
+ * External dependencies.
+ */
 import HtmlReactParser from 'html-react-parser';
+
+/**
+ * Internal dependencies.
+ */
 import AttendanceSelector from './AttendanceSelector';
 import AttendeeList from './AttendeeList';
 import AttendeeResponse from './AttendeeResponse';
@@ -13,24 +20,12 @@ const EventItem = (props) => {
 				.join(' ') + '[…]'
 		);
 	};
-
 	const size =
 		eventOptions.imageSize === 'default'
 			? 'featured_image'
 			: 'featured_image_' + eventOptions.imageSize;
-
 	const featuredImage = HtmlReactParser(event[size]);
-
 	const eventClass = `gp-events-list`;
-	const venue = event.venue
-		? HtmlReactParser(
-				'<a href=' +
-					event.venue.permalink +
-					'>' +
-					event.venue.name +
-					'</a>'
-		  )
-		: null;
 
 	return (
 		<div className={`${eventClass}`}>
@@ -51,17 +46,19 @@ const EventItem = (props) => {
 							{HtmlReactParser(event.title)}
 						</a>
 					</div>
+					{event.venue && (
+						<div className={`${eventClass}__venue`}>
+							<span className="dashicons dashicons-location"></span>
+							<a href={event.venue.permalink}>
+								{event.venue.name}
+							</a>
+						</div>
+					)}
 					{eventOptions.showDescription && (
 						<div className={`${eventClass}__content`}>
 							<div className={`${eventClass}__excerpt`}>
 								{HtmlReactParser(limitExcerpt(event.excerpt))}
 							</div>
-						</div>
-					)}
-					{venue && (
-						<div>
-							{venue}
-							<span className="dashicons dashicons-location"></span>
 						</div>
 					)}
 				</div>
