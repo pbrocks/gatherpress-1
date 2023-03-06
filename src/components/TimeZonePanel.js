@@ -32,30 +32,32 @@ const TimeZonePanel = (props) => {
 
 	return (
 		<PanelRow>
-			<SelectControl
-				label={__('Time Zone', 'gatherpress')}
-				value={maybeConvertUtcOffsetForSelect(timezone)}
-				onChange={(value) => {
-					value = maybeConvertUtcOffsetForDatabase(value);
-					setTimezone(value);
-					setToGlobal('event_datetime.timezone', value);
-					enableSave();
-				}}
-			>
-				{Object.keys(choices).map((group) => {
-					return (
-						<optgroup key={group} label={group}>
-							{Object.keys(choices[group]).map((item) => {
-								return (
-									<option key={item} value={item}>
-										{choices[group][item]}
-									</option>
-								);
-							})}
-						</optgroup>
-					);
-				})}
-			</SelectControl>
+			<div style={{marginBottom:'1rem'}}>
+				<SelectControl
+					label={__('Time Zone', 'gatherpress')}
+					value={maybeConvertUtcOffsetForSelect(timezone)}
+					onChange={(value) => {
+						value = maybeConvertUtcOffsetForDatabase(value);
+						setTimezone(value);
+						setToGlobal('event_datetime.timezone', value);
+						enableSave();
+					}}
+				>
+					{Object.keys(choices).map((group) => {
+						return (
+							<optgroup key={group} label={group}>
+								{Object.keys(choices[group]).map((item) => {
+									return (
+										<option key={item} value={item}>
+											{choices[group][item]}
+										</option>
+									);
+								})}
+							</optgroup>
+						);
+					})}
+				</SelectControl>
+			</div>
 		</PanelRow>
 	);
 };
