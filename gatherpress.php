@@ -31,3 +31,30 @@ require_once GATHERPRESS_CORE_PATH . '/includes/core/classes/class-autoloader.ph
 GatherPress\Core\Autoloader::register();
 GatherPress\Core\Setup::get_instance();
 GatherPress\BuddyPress\Setup::get_instance();
+
+add_filter('define_leadership_array_options', 'individualized_options', 10, 2 );
+/**
+ * Mike hates this: put in the class?
+ *
+ * @param array $options
+ * @return array
+ */
+function individualized_options($options) {
+	$options = [
+		'event-assistants'     => array(
+			'labels' => array(
+				'name'          => __( 'Event Assistants', 'gatherpress' ),
+				'singular_name' => __( 'Event Assistant', 'gatherpress' ),
+				'plural_name'   => __( 'Event Assistants', 'gatherpress' ),
+			),
+			'field'  => array(
+				'type'    => 'autocomplete',
+				'options' => array(
+					'type'  => 'user',
+					'label' =>  __( 'Select Users', 'gatherpress' ),
+				),
+			),
+		),
+	];
+	return $options;
+}
