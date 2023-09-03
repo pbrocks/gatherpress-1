@@ -157,6 +157,23 @@ class Setup {
 		if ( ! get_option( 'gatherpress_flush_rewrite_rules_flag' ) ) {
 			add_option( 'gatherpress_flush_rewrite_rules_flag', true );
 		}
+
+		$upcoming_events = array(
+			'post_title'  => __( 'Upcoming Events', 'gatherpress' ),
+			'post_status' => 'publish',
+			'post_author' => $current_user->ID,
+			'post_type'   => 'page',
+		);
+
+		$past_events = array(
+			'post_title'  => __( 'Past Events', 'gatherpress' ),
+			'post_status' => 'publish',
+			'post_author' => $current_user->ID,
+			'post_type'   => 'page',
+		);
+
+		wp_insert_post( $upcoming_events );
+		wp_insert_post( $past_events );
 	}
 
 	/**
@@ -263,21 +280,25 @@ class Setup {
 	 * @return void
 	 */
 	public function register_post_types(): void {
-		register_post_type(
+	$gp_general = get_option('gp_general');
+	$single_label =  ( $gp_general['event_noun']['single_label'] ?: 'Event' );
+	$plural_label =  ( $gp_general['event_noun']['plural_label'] ?: 'Events' );
+
+	register_post_type(
 			Event::POST_TYPE,
 			array(
 				'labels'        => array(
-					'name'               => _x( 'Events', 'Post Type General Name', 'gatherpress' ),
-					'singular_name'      => _x( 'Event', 'Post Type Singular Name', 'gatherpress' ),
-					'menu_name'          => __( 'Events', 'gatherpress' ),
-					'all_items'          => __( 'All Events', 'gatherpress' ),
-					'view_item'          => __( 'View Event', 'gatherpress' ),
-					'add_new_item'       => __( 'Add New Event', 'gatherpress' ),
-					'add_new'            => __( 'Add New', 'gatherpress' ),
-					'edit_item'          => __( 'Edit Event', 'gatherpress' ),
-					'update_item'        => __( 'Update Event', 'gatherpress' ),
-					'search_items'       => __( 'Search Events', 'gatherpress' ),
-					'not_found'          => __( 'Not Found', 'gatherpress' ),
+					'name'               => sprintf( _x( '%s', 'gatherpress' ), esc_html( $plural_label ) ),
+					'singular_name'      => sprintf( _x( '%s',  'Post Type Singular Name','gatherpress' ), esc_html( $single_label ) ),
+					'menu_name'          => sprintf( __( ' %s', 'gatherpress' ), esc_html( $plural_label ) ),
+					'all_items'          => sprintf( __( 'All %s', 'gatherpress' ), esc_html( $plural_label ) ),
+					'view_item'         => sprintf( __( 'View %s', 'gatherpress' ), esc_html( $plural_label ) ),
+					'add_new_item'      => sprintf( __( 'Add New %s', 'gatherpress' ), esc_html( $single_label ) ),
+					'add_new'           => sprintf( __( 'Add New %s', 'gatherpress' ), esc_html( $single_label ) ),
+					'edit_item'         => sprintf( __( 'Edit %s', 'gatherpress' ), esc_html( $single_label ) ),
+					'update_item'       => sprintf( __( 'Update %s', 'gatherpress' ), esc_html( $single_label ) ),
+					'search_items'       => sprintf( __( '%s Not Found', 'gatherpress' ), esc_html( $single_label ) ),
+					'not_found'          => sprintf( __( 'Search %s', 'gatherpress' ), esc_html( $single_label ) ),
 					'not_found_in_trash' => __( 'Not found in Trash', 'gatherpress' ),
 				),
 				'show_in_rest'  => true,
@@ -291,7 +312,7 @@ class Setup {
 					array(
 						'core/paragraph',
 						array(
-							'placeholder' => __( 'Add a description of the event and let people know what to expect, including the agenda, what they need to bring, and how to find the group.', 'gatherpress' ),
+							'placeholder' => sprintf( __( 'Add a description of the %s and let people know what to expect, including the agenda, what they need to bring, and how to find the group.', 'gatherpress' ), esc_html( strtolower( $single_label ) ) ),
 						),
 					),
 					array( 'gatherpress/rsvp-response' ),
@@ -705,7 +726,7 @@ class Setup {
 	public function set_custom_columns( array $columns ): array {
 		$placement = 2;
 		$insert    = array(
-			'datetime' => __( 'Event date &amp; time', 'gatherpress' ),
+			'datetime' => sprintf( __( '%s date &amp; time', 'gatherpress' ), esc_html( $single_label ) ),
 		);
 
 		return array_slice( $columns, 0, $placement, true ) + $insert + array_slice( $columns, $placement, null, true );

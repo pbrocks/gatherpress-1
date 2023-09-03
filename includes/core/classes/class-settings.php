@@ -238,6 +238,7 @@ class Settings {
 				'name'        => $name,
 				'option'      => Utility::prefix_key( $option ),
 				'value'       => $value,
+				'label'       => $option_settings['field']['label'] ?? '',
 				'description' => $option_settings['description'] ?? '',
 			),
 			true
@@ -504,6 +505,10 @@ class Settings {
 	 * @return array An array containing the General page settings and options.
 	 */
 	public function get_general_page(): array {
+		$gp_general = get_option('gp_general');
+		$single_label =  ( $gp_general['event_noun']['single_label'] ?: 'Event' );
+		$plural_label =  ( $gp_general['event_noun']['plural_label'] ?: 'Events' );
+
 		return array(
 			'name'        => __( 'General', 'gatherpress' ),
 			'description' => __( 'Settings for GatherPress.', 'gatherpress' ),
@@ -511,17 +516,14 @@ class Settings {
 			'sections'    => array(
 				'general' => array(
 					'name'        => __( 'General Settings', 'gatherpress' ),
-					'description' => __(
-						'GatherPress allows you to set event dates to reflect either the post date or event date. Default: show as event date.',
-						'gatherpress'
-					),
+					'description' => sprintf( __( 'GatherPress allows you to set %s dates to reflect either the post date or %s date. Default: show as %s date.', 'gatherpress' ), esc_html( strtolower($single_label ) ), esc_html( strtolower($single_label ) ), esc_html( strtolower($single_label ) ) ),
 					'options'     => array(
 						'post_or_event_date' => array(
 							'labels' => array(
 								'name' => __( 'Publish Date', 'gatherpress' ),
 							),
 							'field'  => array(
-								'label'   => __( 'Show publish date as event date for events', 'gatherpress' ),
+								'label' => sprintf( __( 'Show publish date as event date for %s', 'gatherpress' ), esc_html( strtolower($plural_label ) ) ),
 								'type'    => 'checkbox',
 								'options' => array(
 									'default' => '1',
@@ -530,32 +532,65 @@ class Settings {
 						),
 					),
 				),
+				'event_noun' => array(
+					'name'        => __( 'Label Settings', 'gatherpress' ),
+					'description' => __(
+						'Enter your custom label below if you want to change what your events are called.',
+						'gatherpress'
+					),
+					'options'     => array(
+						'single_label'     => array(
+							'labels' => array(
+								'name' => __( 'Single Label', 'gatherpress' ),
+							),
+							'field'  => array(
+								'type'    => 'text',
+								'label' => sprintf( __( 'How you will refer to single %s?', 'gatherpress' ), esc_html( strtolower($plural_label ) ) ),
+								'options' => array(
+									'default' => 'Event',
+								),
+							),
+						),
+						'plural_label'     => array(
+							'labels' => array(
+								'name' => __( 'Plural Label', 'gatherpress' ),
+							),
+							'field'  => array(
+								'type'    => 'text',
+								'label' => sprintf( __( 'How you will refer to multiple %s?', 'gatherpress' ), esc_html( strtolower($plural_label ) ) ),
+								'options' => array(
+									'default' => 'Events',
+								),
+							),
+						),
+					),
+				),
 				'pages'   => array(
-					'name'        => __( 'Event Archive Pages', 'gatherpress' ),
-					'description' => __( 'GatherPress allows you to set event archives to pages you have created.', 'gatherpress' ),
+					'name' => sprintf( __( '%s Archive Pages', 'gatherpress' ), esc_html( $single_label ) ),
+					'description' => sprintf( __( 'Choose what pages your %s archives are shown on.', 'gatherpress' ), esc_html( strtolower( $single_label ) ) ),
 					'options'     => array(
 						'upcoming_events' => array(
 							'labels' => array(
-								'name' => __( 'Upcoming Events', 'gatherpress' ),
+								'name' => sprintf( __( 'Upcoming %s', 'gatherpress' ), esc_html( $plural_label ) ),
 							),
 							'field'  => array(
 								'type'    => 'autocomplete',
 								'options' => array(
 									'type'  => 'page',
-									'label' => __( 'Select Upcoming Events Archive Page', 'gatherpress' ),
+									'label' => sprintf( __( 'Select Upcoming %s Archive Page', 'gatherpress' ), esc_html( $plural_label ) ),
 									'limit' => 1,
 								),
 							),
 						),
 						'past_events'     => array(
 							'labels' => array(
-								'name' => __( 'Past Events', 'gatherpress' ),
+								'name' => __( 'Past ', 'gatherpress' ) . esc_html( $plural_label ) ,
 							),
 							'field'  => array(
 								'type'    => 'autocomplete',
 								'options' => array(
 									'type'  => 'page',
-									'label' => __( 'Select Past Events Archive Page', 'gatherpress' ),
+									'label' => sprintf( __( 'Select Past %s Archive Page', 'gatherpress' ), esc_html( $plural_label ) ),
 									'limit' => 1,
 								),
 							),

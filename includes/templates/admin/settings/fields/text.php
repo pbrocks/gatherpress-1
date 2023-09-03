@@ -18,13 +18,9 @@ if ( ! isset( $name, $option, $value, $description ) ) {
 	return;
 }
 ?>
-<label for="<?php echo esc_attr( $option ); ?>"></label>
-<input id="<?php echo esc_attr( $option ); ?>" type="text" name="<?php echo esc_attr( $name ); ?>" class="regular-text" value="<?php echo esc_attr( $value ); ?>" />
-<?php
-if ( ! empty( $description ) ) {
-	?>
-	<p class="description">
-		<?php echo esc_html( $description ); ?>
-	</p>
-	<?php
-}
+<p class="input">
+	<input id="<?php echo esc_attr( $option ); ?>" type="text" name="<?php echo esc_attr( $name ); ?>" class="regular-text" value="<?php echo esc_attr( $value ); ?>" />
+</p>
+<p class="description">
+	<label for="<?php echo esc_attr( $option ); ?>"><?php echo esc_html( $label ); ?></label>
+</p>
