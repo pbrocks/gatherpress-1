@@ -6,7 +6,6 @@ import moment from 'moment';
 /**
  * WordPress dependencies.
  */
-import { __ } from '@wordpress/i18n';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import { Flex, FlexItem, Icon, PanelBody } from '@wordpress/components';
 import { useState } from '@wordpress/element';
@@ -15,15 +14,14 @@ import { useState } from '@wordpress/element';
  * Internal dependencies.
  */
 import { Listener } from '../../helpers/broadcasting';
-import DateTimeStartPanel from '../../components/DateTimeStartPanel';
-import DateTimeEndPanel from '../../components/DateTimeEndPanel';
 import {
 	defaultDateTimeEnd,
 	defaultDateTimeStart,
 	getTimeZone,
 	getUtcOffset,
 } from '../../helpers/datetime';
-import TimeZonePanel from '../../components/TimeZonePanel';
+import EditCover from '../../components/EditCover';
+import DateTimeRange from '../../components/DateTimeRange';
 
 /**
  * Similar to get_display_datetime method in class-event.php.
@@ -66,31 +64,21 @@ const Edit = () => {
 
 	return (
 		<div {...blockProps}>
-			<Flex justify="normal" align="flex-start" gap="4">
-				<FlexItem display="flex" className="gp-event-date__icon">
-					<Icon icon="clock" />
-				</FlexItem>
-				<FlexItem>
-					{displayDateTime(dateTimeStart, dateTimeEnd, timezone)}
-				</FlexItem>
-				<InspectorControls>
-					<PanelBody>
-						<h3>{__('Date & time', 'gatherpress')}</h3>
-						<DateTimeStartPanel
-							dateTimeStart={dateTimeStart}
-							setDateTimeStart={setDateTimeStart}
-						/>
-						<DateTimeEndPanel
-							dateTimeEnd={dateTimeEnd}
-							setDateTimeEnd={setDateTimeEnd}
-						/>
-						<TimeZonePanel
-							timezone={timezone}
-							setTimezone={setTimezone}
-						/>
-					</PanelBody>
-				</InspectorControls>
-			</Flex>
+			<EditCover>
+				<Flex justify="normal" align="flex-start" gap="4">
+					<FlexItem display="flex" className="gp-event-date__icon">
+						<Icon icon="clock" />
+					</FlexItem>
+					<FlexItem>
+						{displayDateTime(dateTimeStart, dateTimeEnd, timezone)}
+					</FlexItem>
+					<InspectorControls>
+						<PanelBody>
+							<DateTimeRange />
+						</PanelBody>
+					</InspectorControls>
+				</Flex>
+			</EditCover>
 		</div>
 	);
 };

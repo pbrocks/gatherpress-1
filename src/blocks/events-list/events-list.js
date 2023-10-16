@@ -2,7 +2,7 @@
  * WordPress dependencies.
  */
 import domReady from '@wordpress/dom-ready';
-import { render } from '@wordpress/element';
+import { createRoot } from '@wordpress/element';
 
 /**
  * Internal dependencies.
@@ -17,23 +17,23 @@ domReady(() => {
 	for (let i = 0; i < containers.length; i++) {
 		const attrs = JSON.parse(containers[i].dataset.gp_block_attrs);
 
-		render(
+		createRoot(containers[i]).render(
 			<EventsList
 				eventOptions={
 					attrs.eventOptions ?? {
 						descriptionLimit: 55,
 						imageSize: 'default',
-						showAttendeeList: true,
+						showRsvpResponse: true,
 						showDescription: true,
 						showFeaturedImage: true,
-						showRsvpButton: true,
+						showRsvp: true,
+						showVenue: true,
 					}
 				}
 				type={attrs.type ?? 'upcoming'}
 				maxNumberOfEvents={attrs.maxNumberOfEvents ?? 5}
 				topics={attrs.topics ?? []}
-			/>,
-			containers[i]
+			/>
 		);
 	}
 });

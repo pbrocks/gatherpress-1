@@ -1,26 +1,35 @@
 .gp-settings {
-
 	&__credits {
-		display: flex;
-		flex-wrap: wrap;
+		a {
+			text-decoration: none;
 
-		li {
-			width: 25%;
-			text-align: center;
-
-			@media screen and (max-width: 37.5rem) {
-				width: 50%;
+			&:hover {
+				text-decoration: underline;
 			}
 		}
+	}
+
+	&__credits-featured {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+		margin-bottom: 2rem;
 
 		a {
 			display: block;
+			font-size: 1.2rem;
+			font-weight: 600;
 			padding: 1rem;
-			font-size: 1.1rem;
 		}
 
 		img {
 			border-radius: 999rem;
+			margin-bottom: 0.5rem;
+		}
+
+		li {
+			text-align: center;
+			width: 10rem;
 		}
 	}
 

@@ -1,10 +1,14 @@
 <?php
 /**
- * Settings template.
+ * Template for GatherPress settings pages.
  *
- * @package GatherPress
- * @subpackage Core
+ * This template is used to display and manage settings for the GatherPress plugin.
+ *
+ * @package GatherPress\Core
  * @since 1.0.0
+ *
+ * @param array  $sub_pages An array of sub-pages and their corresponding values.
+ * @param string $page      The current settings page.
  */
 
 use GatherPress\Core\Settings;
@@ -36,14 +40,5 @@ $gatherpress_settings = Settings::get_instance();
 		}
 		?>
 	</h2>
-	<?php if ( Utility::prefix_key( 'credits' ) === $page ) : ?>
-		<?php do_settings_sections( $page ); ?>
-	<?php else : ?>
-		<form method="post" action="options.php">
-			<?php settings_fields( $page ); ?>
-			<?php do_settings_sections( $page ); ?>
-
-			<?php submit_button( __( 'Save Settings', 'gatherpress' ) ); ?>
-		</form>
-	<?php endif; ?>
+	<?php do_action( 'gatherpress_settings_section', $page ); ?>
 </div>

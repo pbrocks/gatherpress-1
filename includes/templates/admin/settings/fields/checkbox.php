@@ -1,24 +1,30 @@
 <?php
 /**
- * Checkbox Field template.
+ * Template for rendering a checkbox input field.
  *
- * @package GatherPress
- * @subpackage Core
+ * This template is used to display a checkbox input field in GatherPress settings pages.
+ *
+ * @package GatherPress\Core
  * @since 1.0.0
+ *
+ * @param string $name        The name attribute for the input field.
+ * @param string $label       The label text displayed next to the checkbox.
+ * @param string $option      The option name in which the field value is stored.
+ * @param mixed  $value       The current value of the checkbox (boolean or equivalent).
+ * @param string $description Optional. The description or tooltip text for the field.
  */
 
-if ( ! isset( $name, $option, $value, $description ) ) {
+if ( ! isset( $name, $label, $option, $value, $description ) ) {
 	return;
 }
 ?>
-<label for="<?php echo esc_attr( $option ); ?>"></label>
-<input id="<?php echo esc_attr( $option ); ?>" type="hidden" name="<?php echo esc_attr( $name ); ?>" value="0" />
+<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value="0" />
 <input id="<?php echo esc_attr( $option ); ?>" type="checkbox" name="<?php echo esc_attr( $name ); ?>" value="1" <?php checked( 1, rest_sanitize_boolean( $value ), true ); ?> />
+<label for="<?php echo esc_attr( $option ); ?>"><?php echo esc_html( $label ); ?></label>
+
 <?php
 if ( ! empty( $description ) ) {
 	?>
-	<p class="description">
-		<?php echo esc_html( $description ); ?>
-	</p>
+	<p class="description"><?php echo esc_html( $description ); ?></p>
 	<?php
 }

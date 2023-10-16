@@ -28,29 +28,44 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies.
  */
 import EventsList from '../../components/EventsList';
+import EditCover from '../../components/EditCover';
 
 const Edit = (props) => {
 	const { attributes, setAttributes } = props;
 	const blockProps = useBlockProps();
-	const { topics } = attributes;
-	const { topicsList } = useSelect(
-		(select) => {
-			const { getEntityRecords } = select(coreStore);
-			return {
-				topicsList: getEntityRecords('taxonomy', 'gp_topic', {
-					per_page: -1,
-					context: 'view',
-				}),
-			};
-		},
-		[topics]
-	);
+	const { topics, venues } = attributes;
+	const { topicsList } = useSelect((select) => {
+		const { getEntityRecords } = select(coreStore);
+		return {
+			topicsList: getEntityRecords('taxonomy', 'gp_topic', {
+				per_page: -1,
+				context: 'view',
+			}),
+		};
+	}, []);
+	const { venueList } = useSelect((select) => {
+		const { getEntityRecords } = select(coreStore);
+		return {
+			venueList: getEntityRecords('taxonomy', '_gp_venue', {
+				per_page: -1,
+				context: 'view',
+			}),
+		};
+	}, []);
 	const excerptMax = 55;
 	const topicSuggestions =
 		topicsList?.reduce(
 			(accumulator, topic) => ({
 				...accumulator,
 				[topic.name]: topic,
+			}),
+			{}
+		) ?? {};
+	const venueSuggestions =
+		venueList?.reduce(
+			(accumulator, venue) => ({
+				...accumulator,
+				[venue.name]: venue,
 			}),
 			{}
 		) ?? {};
@@ -75,13 +90,33 @@ const Edit = (props) => {
 		setAttributes({ topics: allTopics });
 	};
 
+	const selectVenues = (tokens) => {
+		const hasNoSuggestion = tokens.some(
+			(token) => typeof token === 'string' && !venueSuggestions[token]
+		);
+
+		if (hasNoSuggestion) {
+			return;
+		}
+
+		const allVenues = tokens.map((token) => {
+			return typeof token === 'string' ? venueSuggestions[token] : token;
+		});
+
+		if (includes(allVenues, null)) {
+			return false;
+		}
+
+		setAttributes({ venues: allVenues });
+	};
+
 	const imageOptions = [
 		{ label: 'Default', value: 'default' },
 		{ label: 'Thumbnail', value: 'thumbnail' },
 		{ label: 'Large', value: 'large' },
 	];
 	return (
-		<div {...blockProps}>
+		<>
 			<InspectorControls>
 				<PanelBody>
 					<p>{__('Event List type', 'gatherpress')}</p>
@@ -162,23 +197,58 @@ const Edit = (props) => {
 						onChange={selectTopics}
 						maxSuggestions={20}
 					/>
+					<FormTokenField
+						key="query-controls-venues-select"
+						label={__('Venues', 'gatherpress')}
+						value={
+							venues &&
+							venues.map((item) => ({
+								id: item.id,
+								slug: item.slug,
+								value: item.name || item.value,
+							}))
+						}
+						suggestions={Object.keys(venueSuggestions)}
+						onChange={selectVenues}
+						maxSuggestions={20}
+					/>
 				</PanelBody>
 				<PanelBody>
 					<ToggleControl
-						label={__('Show/Hide Attendee list', 'gatherpress')}
+						label={__(
+							'Show/Hide All RSVP Responses',
+							'gatherpress'
+						)}
 						help={
-							attributes.eventOptions.showAttendeeList
-								? __('Show Attendee List', 'gatherpress')
-								: __('Do not show Attendee List', 'gatherpress')
+							attributes.eventOptions.showRsvpResponse
+								? __('Show All RSVP Responses', 'gatherpress')
+								: __('Hide All RSVP Responses', 'gatherpress')
 						}
 						checked={
-							attributes.eventOptions.showAttendeeList ?? true
+							attributes.eventOptions.showRsvpResponse ?? true
 						}
 						onChange={(value) => {
 							setAttributes({
 								eventOptions: {
 									...attributes.eventOptions,
-									showAttendeeList: value,
+									showRsvpResponse: value,
+								},
+							});
+						}}
+					/>
+					<ToggleControl
+						label={__('Show/Hide My RSVP Response')}
+						help={
+							attributes.eventOptions.showRsvp
+								? __('Show My RSVP Response')
+								: __('Hide My RSVP Response')
+						}
+						checked={attributes.eventOptions.showRsvp}
+						onChange={(value) => {
+							setAttributes({
+								eventOptions: {
+									...attributes.eventOptions,
+									showRsvp: value,
 								},
 							});
 						}}
@@ -201,10 +271,7 @@ const Edit = (props) => {
 						help={
 							attributes.eventOptions.showFeaturedImage
 								? __('Show Featured Image', 'gatherpress')
-								: __(
-										'Do not show Featured Image',
-										'gatherpress'
-								  )
+								: __('Hide Featured Image', 'gatherpress')
 						}
 						checked={attributes.eventOptions.showFeaturedImage}
 						onChange={(value) => {
@@ -217,7 +284,7 @@ const Edit = (props) => {
 						}}
 					/>
 					<ToggleControl
-						label={__('Show/Description', 'gatherpress')}
+						label={__('Show/Hide Description', 'gatherpress')}
 						help={
 							attributes.eventOptions.showDescription
 								? __('Show Description', 'gatherpress')
@@ -254,31 +321,36 @@ const Edit = (props) => {
 						type="number"
 					/>
 					<ToggleControl
-						label={__('Show/RSVP Button')}
+						label={__('Show/Event Venue')}
 						help={
-							attributes.eventOptions.showRsvpButton
-								? __('Show RSVP Button')
-								: __('Hide RSVP Button')
+							attributes.eventOptions.showVenue
+								? __('Show Event Venue')
+								: __('Hide Event Venue')
 						}
-						checked={attributes.eventOptions.showRsvpButton}
+						checked={attributes.eventOptions.showVenue}
 						onChange={(value) => {
 							setAttributes({
 								eventOptions: {
 									...attributes.eventOptions,
-									showRsvpButton: value,
+									showVenue: value,
 								},
 							});
 						}}
 					/>
 				</PanelBody>
 			</InspectorControls>
-			<EventsList
-				eventOptions={attributes.eventOptions}
-				maxNumberOfEvents={attributes.maxNumberOfEvents}
-				type={attributes.type}
-				topics={attributes.topics}
-			/>
-		</div>
+			<div {...blockProps}>
+				<EditCover>
+					<EventsList
+						eventOptions={attributes.eventOptions}
+						maxNumberOfEvents={attributes.maxNumberOfEvents}
+						type={attributes.type}
+						topics={attributes.topics}
+						venues={attributes.venues}
+					/>
+				</EditCover>
+			</div>
+		</>
 	);
 };
 

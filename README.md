@@ -19,12 +19,9 @@ If you wish to share in the collaborative of work to build _GatherPress_, please
 
 **GatherePress.org**
 > Talk to Mervin for access to `gatherpress.org` via SSH and WP Admin login.
-> Host: `138.197.7.55`
-> User: `gatherpress`
-> Auth: `key pair`
 
 # Credits
-[mauteri](https://profiles.wordpress.org/mauteri/), [hrmervin](https://profiles.wordpress.org/hrmervin/), [pbrocks](https://profiles.wordpress.org/pbrocks/), [hauvong](https://profiles.wordpress.org/hauvong/)
+[mauteri](https://profiles.wordpress.org/mauteri/), [hrmervin](https://profiles.wordpress.org/hrmervin/), [pbrocks](https://profiles.wordpress.org/pbrocks/), [jmarx](https://profiles.wordpress.org/jmarx/), [hauvong](https://profiles.wordpress.org/hauvong/)
 
 ---
 
@@ -39,8 +36,8 @@ If you wish to share in the collaborative of work to build _GatherPress_, please
 1. Go to the WP Admin > Events
 2. Add an event
 3. Populate a date/time
-4. Add the `Attendance Selector` block where you wish to display the CTA for this event
-5. Add the `Attendance List` block (if desired) to display the list of attendees
+4. Add the `RSVP` block where you wish to display the CTA for this event
+5. Add the `RSVP Response` block (if desired) to display the list of folks responding to this event
 6. Done
 
 ## 3. Settings
@@ -91,13 +88,11 @@ git clone https://github.com/YourGithubUsername/gatherpress.git
 
 Once you have forked the GatherPress repo, you can also change the folder name of your version of the repository by going into your settings of your repo on Github's website.
 
-For example, my repo is called `gatherpress-pbrocks`, which distinguishes itself from the upstream repo. As a result, my clone of GatherPres is found here:
-
 ```
-https://github.com/pbrocks/gatherpress-pbrocks
+https://github.com/pbrocks/gatherpress
 ```
 
-![PBrocks GatherPress repo](docs/media/pbrocksgatherpress-pbrocks.png)
+![PBrocks GatherPress repo](docs/media/pbrocks-gatherpress.png)
 
 ### Install wp-env globally
 
@@ -116,20 +111,13 @@ cd gatherpress
 wp-env start
 ```
 
-or in my case:
-
-```sh
-cd gatherpress-pbrocks
-wp-env start
-```
-
 You should then see that a development site has been configured for you on localhost port 2003
 
-![Development Site Login](docs/media/wp-env.json—startup.png)
+![Development Site Login](docs/media/wp-env.json-startup.png)
 
 #### Log in to Site / Log into Site
 
-![Development Site Login](docs/media/dev-login-gatherpress-pbrocks.png)
+![Development Site Login](docs/media/dev-login-gatherpress.png)
 
 #### Development Site Plugins/Themes
 
