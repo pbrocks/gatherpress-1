@@ -12,26 +12,40 @@ import { useDispatch, useSelect } from '@wordpress/data';
 import { Broadcaster, Listener } from '../helpers/broadcasting';
 import { getFromGlobal } from '../helpers/globals';
 
+/**
+ * OnlineEventLink component for GatherPress.
+ *
+ * This component provides a TextControl input for adding or editing the online event link
+ * associated with a post in the WordPress editor. It updates the post meta and broadcasts
+ * the change to other components.
+ *
+ * @since 1.0.0
+ *
+ * @return {JSX.Element} The rendered React component.
+ */
 const OnlineEventLink = () => {
 	const { editPost, unlockPostSaving } = useDispatch('core/editor');
 	const onlineEventLinkMetaData = useSelect(
 		(select) =>
 			select('core/editor').getEditedPostAttribute('meta')
-				._online_event_link
+				.online_event_link
 	);
 	const [onlineEventLink, setOnlineEventLink] = useState(
 		onlineEventLinkMetaData
 	);
 	const updateEventLink = (value) => {
-		const meta = { _online_event_link: value };
+		const meta = { online_event_link: value };
 
 		editPost({ meta });
 		setOnlineEventLink(value);
-		Broadcaster({ setOnlineEventLink: value }, getFromGlobal('post_id'));
+		Broadcaster(
+			{ setOnlineEventLink: value },
+			getFromGlobal('eventDetails.postId')
+		);
 		unlockPostSaving();
 	};
 
-	Listener({ setOnlineEventLink }, getFromGlobal('post_id'));
+	Listener({ setOnlineEventLink }, getFromGlobal('eventDetails.postId'));
 
 	return (
 		<TextControl

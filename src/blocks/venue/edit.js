@@ -25,9 +25,26 @@ import VenueInformation from '../../panels/venue-settings/venue-information';
 import OnlineEventLink from '../../components/OnlineEventLink';
 import { Listener } from '../../helpers/broadcasting';
 import { isEventPostType } from '../../helpers/event';
+import { isSinglePostInEditor } from '../../helpers/globals';
 
+/**
+ * Edit component for the GatherPress Venue block.
+ *
+ * This component renders the edit view of the GatherPress Venue block in the WordPress block editor.
+ * It provides an interface for users to add and configure venue information, including map settings.
+ * The component includes controls for selecting a venue, entering venue details, and configuring map display options.
+ *
+ * @since 1.0.0
+ *
+ * @param {Object}   props               - Component properties.
+ * @param {Object}   props.attributes    - Block attributes.
+ * @param {Function} props.setAttributes - Function to set block attributes.
+ * @param {boolean}  props.isSelected    - Flag indicating if the block is selected in the editor.
+ *
+ * @return {JSX.Element} The rendered React component.
+ */
 const Edit = ({ attributes, setAttributes, isSelected }) => {
-	const { mapShow, mapZoomLevel, mapType, mapHeight } = attributes;
+	const { mapZoomLevel, mapType, mapHeight } = attributes;
 	const [name, setName] = useState('');
 	const [fullAddress, setFullAddress] = useState('');
 	const [phoneNumber, setPhoneNumber] = useState('');
@@ -36,20 +53,30 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 	const blockProps = useBlockProps();
 	const onlineEventLink = useSelect(
 		(select) =>
-			select('core/editor').getEditedPostAttribute('meta')
-				._online_event_link
+			select('core/editor')?.getEditedPostAttribute('meta')
+				?.online_event_link
 	);
+
+	let { mapShow } = attributes;
 
 	let venueInformationMetaData = useSelect(
 		(select) =>
-			select('core/editor').getEditedPostAttribute('meta')
-				._venue_information
+			select('core/editor')?.getEditedPostAttribute('meta')
+				?.venue_information
 	);
 
 	if (venueInformationMetaData) {
 		venueInformationMetaData = JSON.parse(venueInformationMetaData);
 	} else {
 		venueInformationMetaData = {};
+	}
+
+	if (mapShow && fullAddress) {
+		mapShow = true;
+	}
+
+	if (mapShow && !isSinglePostInEditor()) {
+		mapShow = true;
 	}
 
 	Listener({
@@ -73,7 +100,7 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 			}
 		}
 
-		if (isEventPostType()) {
+		if (isEventPostType() || !isSinglePostInEditor()) {
 			if (!fullAddress && !phoneNumber && !website) {
 				setName(__('No venue selected.', 'gatherpress'));
 			} else {
@@ -92,20 +119,22 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody
-					title={__('Venue settings', 'gatherpress')}
-					initialOpen={true}
-				>
-					<PanelRow>
-						{!isVenuePostType() && <VenueSelector />}
-						{isVenuePostType() && <VenueInformation />}
-					</PanelRow>
-					{isOnlineEventTerm && (
+				{isSinglePostInEditor() && (
+					<PanelBody
+						title={__('Venue settings', 'gatherpress')}
+						initialOpen={true}
+					>
 						<PanelRow>
-							<OnlineEventLink />
+							{!isVenuePostType() && <VenueSelector />}
+							{isVenuePostType() && <VenueInformation />}
 						</PanelRow>
-					)}
-				</PanelBody>
+						{isOnlineEventTerm && (
+							<PanelRow>
+								<OnlineEventLink />
+							</PanelRow>
+						)}
+					</PanelBody>
+				)}
 				{!isOnlineEventTerm && (
 					<PanelBody
 						title={__('Map settings', 'gatherpress')}
@@ -167,6 +196,7 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 					</PanelBody>
 				)}
 			</InspectorControls>
+
 			<div {...blockProps}>
 				<EditCover isSelected={isSelected}>
 					<div className="gp-venue">
@@ -178,7 +208,7 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 							isOnlineEventTerm={isOnlineEventTerm}
 							onlineEventLink={onlineEventLink}
 						/>
-						{mapShow && fullAddress && (
+						{mapShow && (
 							<MapEmbed
 								location={fullAddress}
 								zoom={mapZoomLevel}

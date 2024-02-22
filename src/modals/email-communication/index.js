@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies.
  */
-import { __ } from '@wordpress/i18n';
+import { __, _x } from '@wordpress/i18n';
 import domReady from '@wordpress/dom-ready';
 import { createRoot, useState, useEffect } from '@wordpress/element';
 import {
@@ -20,6 +20,17 @@ import apiFetch from '@wordpress/api-fetch';
 import { Listener } from '../../helpers/broadcasting';
 import { getFromGlobal } from '../../helpers/globals';
 
+/**
+ * A modal component for notifying event members via email.
+ *
+ * This component provides a modal for event organizers to send email notifications
+ * to specific groups of event members, such as attendees, waiting list members, or those
+ * who have not indicated attendance.
+ *
+ * @since 1.0.0
+ *
+ * @return {JSX.Element} The JSX element for the Event Communication Modal.
+ */
 const EventCommuncationModal = () => {
 	const [isOpen, setOpen] = useState(false);
 	const [isAllChecked, setAllChecked] = useState(false);
@@ -35,10 +46,10 @@ const EventCommuncationModal = () => {
 			global.confirm(__('Confirm you are ready to send?', 'gatherpress'))
 		) {
 			apiFetch({
-				path: '/gatherpress/v1/event/email/',
+				path: getFromGlobal('urls.eventRestApi') + '/email',
 				method: 'POST',
 				data: {
-					post_id: getFromGlobal('post_id'),
+					post_id: getFromGlobal('eventDetails.postId'),
 					message,
 					send: {
 						all: isAllChecked,
@@ -46,7 +57,7 @@ const EventCommuncationModal = () => {
 						waiting_list: isWaitingListChecked,
 						not_attending: isNotAttendingChecked,
 					},
-					_wpnonce: getFromGlobal('nonce'),
+					_wpnonce: getFromGlobal('misc.nonce'),
 				},
 			}).then((res) => {
 				if (res.success) {
@@ -135,7 +146,11 @@ const EventCommuncationModal = () => {
 						</FlexItem>
 						<FlexItem>
 							<CheckboxControl
-								label={__('Not Attending', 'gatherpress')}
+								label={_x(
+									'Not Attending',
+									'list of people not attending',
+									'gatherpress'
+								)}
 								checked={isNotAttendingChecked}
 								onChange={setNotAttendingChecked}
 								disabled={isCheckBoxDisabled}

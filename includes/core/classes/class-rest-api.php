@@ -27,7 +27,9 @@ use WP_REST_Server;
  * @since 1.0.0
  */
 class Rest_Api {
-
+	/**
+	 * Enforces a single instance of this class.
+	 */
 	use Singleton;
 
 	/**
@@ -112,7 +114,7 @@ class Rest_Api {
 			'args'  => array(
 				'methods'             => WP_REST_Server::EDITABLE,
 				'callback'            => array( $this, 'update_datetime' ),
-				'permission_callback' => static function(): bool {
+				'permission_callback' => static function (): bool {
 					return current_user_can( 'edit_posts' );
 				},
 				'args'                => array(
@@ -152,7 +154,7 @@ class Rest_Api {
 			'args'  => array(
 				'methods'             => WP_REST_Server::EDITABLE,
 				'callback'            => array( $this, 'email' ),
-				'permission_callback' => static function(): bool {
+				'permission_callback' => static function (): bool {
 					return current_user_can( 'edit_posts' );
 				},
 				'args'                => array(
@@ -188,7 +190,7 @@ class Rest_Api {
 			'args'  => array(
 				'methods'             => WP_REST_Server::EDITABLE,
 				'callback'            => array( $this, 'update_rsvp' ),
-				'permission_callback' => static function(): bool {
+				'permission_callback' => static function (): bool {
 					return is_user_logged_in();
 				},
 				'args'                => array(
@@ -230,6 +232,9 @@ class Rest_Api {
 						'required'          => true,
 						'validate_callback' => array( $this, 'validate_number' ),
 					),
+					'datetime_format' => array(
+						'required' => false,
+					),
 					'topics'          => array(
 						'required' => false,
 					),
@@ -249,7 +254,7 @@ class Rest_Api {
 	 * @return bool True if the parameter is a valid RSVP status, false otherwise.
 	 */
 	public function validate_rsvp_status( $param ): bool {
-		return ( 'attending' === $param || 'not_attending' === $param );
+		return ( 'attending' === $param || 'not_attending' === $param || 'no_status' === $param );
 	}
 
 	/**
@@ -445,6 +450,10 @@ class Rest_Api {
 		$subject = stripslashes_deep( html_entity_decode( $subject, ENT_QUOTES, 'UTF-8' ) );
 
 		foreach ( $members as $member ) {
+			if ( '0' === get_user_meta( $member->ID, 'gp-event-updates-opt-in', true ) ) {
+				continue;
+			}
+
 			if ( $member->user_email ) {
 				$to = $member->user_email;
 
@@ -483,7 +492,7 @@ class Rest_Api {
 				$member_ids = array_merge(
 					$member_ids,
 					array_map(
-						static function( $member ) {
+						static function ( $member ) {
 							return $member['id'];
 						},
 						$all_responses[ $status ]['responses']
@@ -518,13 +527,14 @@ class Rest_Api {
 		$params          = $request->get_params();
 		$event_list_type = $params['event_list_type'];
 		$max_number      = $this->max_number( (int) $params['max_number'], 5 );
+		$datetime_format = ! empty( $params['datetime_format'] ) ? $params['datetime_format'] : 'D, M j, Y, g:i a T';
 		$posts           = array();
 		$topics          = array();
 		$venues          = array();
 
 		if ( ! empty( $params['topics'] ) ) {
 			$topics = array_map(
-				static function( $slug ): string {
+				static function ( $slug ): string {
 					return sanitize_key( $slug );
 				},
 				explode( ',', $params['topics'] )
@@ -533,7 +543,7 @@ class Rest_Api {
 
 		if ( ! empty( $params['venues'] ) ) {
 			$venues = array_map(
-				static function( $slug ): string {
+				static function ( $slug ): string {
 					return sanitize_key( $slug );
 				},
 				explode( ',', $params['venues'] )
@@ -548,14 +558,15 @@ class Rest_Api {
 				$venue_information = $event->get_venue_information();
 				$posts[]           = array(
 					'ID'                       => $post_id,
-					'datetime_start'           => $event->get_datetime_start(),
-					'datetime_end'             => $event->get_datetime_end(),
+					'datetime_start'           => $event->get_datetime_start( $datetime_format ),
+					'datetime_end'             => $event->get_datetime_end( $datetime_format ),
 					'permalink'                => get_the_permalink( $post_id ),
 					'title'                    => get_the_title( $post_id ),
 					'excerpt'                  => get_the_excerpt( $post_id ),
 					'featured_image'           => get_the_post_thumbnail( $post_id, 'medium' ),
 					'featured_image_large'     => get_the_post_thumbnail( $post_id, 'large' ),
 					'featured_image_thumbnail' => get_the_post_thumbnail( $post_id, 'thumbnail' ),
+					'enable_anonymous_rsvp'    => (bool) get_post_meta( $post_id, 'enable_anonymous_rsvp', true ),
 					'responses'                => ( $event->rsvp ) ? $event->rsvp->responses() : array(),
 					'current_user'             => ( $event->rsvp && $event->rsvp->get( get_current_user_id() ) )
 						? $event->rsvp->get( get_current_user_id() )
@@ -611,8 +622,8 @@ class Rest_Api {
 		$post_id         = intval( $params['post_id'] );
 		$status          = sanitize_key( $params['status'] );
 		$guests          = intval( $params['guests'] );
+		$anonymous       = intval( $params['anonymous'] );
 		$event           = new Event( $post_id );
-		$online_link     = (string) get_post_meta( $post_id, '_online_event_link', true );
 
 		// If managing user is adding someone to an event.
 		if (
@@ -636,7 +647,7 @@ class Rest_Api {
 			is_user_member_of_blog( $user_id ) &&
 			! $event->has_event_past()
 		) {
-			$status = $event->rsvp->save( $user_id, $status, $guests );
+			$status = $event->rsvp->save( $user_id, $status, $anonymous );
 
 			if ( in_array( $status, $event->rsvp->statuses, true ) ) {
 				$success = true;
@@ -648,8 +659,9 @@ class Rest_Api {
 			'success'     => $success,
 			'status'      => $status,
 			'guests'      => $guests,
+			'anonymous'   => $anonymous,
 			'responses'   => $event->rsvp->responses(),
-			'online_link' => ( 'attending' === $status ) ? $online_link : '',
+			'online_link' => $event->maybe_get_online_event_link(),
 		);
 
 		return new WP_REST_Response( $response );
@@ -673,9 +685,8 @@ class Rest_Api {
 		// - The user is attending the event.
 		// - The event is in the future.
 		// - The code is not in an admin context.
-		$response->data['meta']['_online_event_link'] = $event->maybe_get_online_event_link();
+		$response->data['meta']['online_event_link'] = $event->maybe_get_online_event_link();
 
 		return $response;
 	}
-
 }

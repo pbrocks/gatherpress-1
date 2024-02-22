@@ -20,7 +20,6 @@ namespace GatherPress\Core;
  * @since 1.0.0
  */
 class Autoloader {
-
 	/**
 	 * Register method for autoloader.
 	 *
@@ -30,8 +29,8 @@ class Autoloader {
 	 */
 	public static function register(): void {
 		spl_autoload_register(
-			static function( $class ): bool {
-				$structure = strtolower( $class );
+			static function ( $class_string ): bool {
+				$structure = strtolower( $class_string );
 				$structure = str_replace( '_', '-', $structure );
 				$structure = explode( '\\', $structure );
 
@@ -46,8 +45,9 @@ class Autoloader {
 				array_unshift( $structure, 'includes' );
 
 				switch ( $class_type ) {
-					case 'traits':
+					case 'commands':
 					case 'settings':
+					case 'traits':
 						array_pop( $structure );
 						array_push( $structure, 'classes', $class_type );
 						break;
@@ -69,5 +69,4 @@ class Autoloader {
 			}
 		);
 	}
-
 }

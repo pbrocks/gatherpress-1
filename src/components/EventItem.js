@@ -10,6 +10,23 @@ import Rsvp from './Rsvp';
 import RsvpResponseAvatarOnly from './RsvpResponseAvatarOnly';
 import RsvpStatusResponse from './RsvpStatusResponse';
 
+/**
+ * EventItem component for GatherPress.
+ *
+ * This component represents an individual event item in the events list.
+ * It displays various details of the event, including the featured image,
+ * date and time, title, venue, and description. It also handles RSVP and
+ * RSVP response components based on the event type.
+ *
+ * @since 1.0.0
+ *
+ * @param {Object} props              - Component properties.
+ * @param {string} props.type         - The type of the event (upcoming or past).
+ * @param {Object} props.event        - The event data.
+ * @param {Object} props.eventOptions - Options for displaying the event.
+ *
+ * @return {JSX.Element} The rendered React component.
+ */
 const EventItem = (props) => {
 	const { type, event, eventOptions } = props;
 	const limitExcerpt = (excerpt) => {
@@ -78,7 +95,7 @@ const EventItem = (props) => {
 				{eventOptions.showRsvpResponse && (
 					<div className="gp-rsvp-response__items">
 						<RsvpResponseAvatarOnly
-							eventId={event.ID}
+							postId={event.ID}
 							value="attending"
 							responses={event.responses}
 							limit="3"
@@ -87,9 +104,10 @@ const EventItem = (props) => {
 				)}
 				{'upcoming' === type && eventOptions.showRsvp && (
 					<Rsvp
-						eventId={event.ID}
+						postId={event.ID}
 						currentUser={event.current_user}
 						type={type}
+						enableAnonymousRsvp={event.enable_anonymous_rsvp}
 					/>
 				)}
 

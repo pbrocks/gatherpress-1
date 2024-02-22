@@ -12,8 +12,33 @@ import EventItem from './EventItem';
 import { getFromGlobal } from '../helpers/globals';
 import apiFetch from '@wordpress/api-fetch';
 
+/**
+ * EventsList component for GatherPress.
+ *
+ * This component displays a list of events based on the provided parameters.
+ * It retrieves the events from the server using the WordPress REST API or
+ * GatherPress custom API, depending on whether the user is logged in or not.
+ *
+ * @since 1.0.0
+ *
+ * @param {Object} props                   - Component properties.
+ * @param {Object} props.eventOptions      - Options for displaying each event in the list.
+ * @param {number} props.maxNumberOfEvents - The maximum number of events to display.
+ * @param {string} props.type              - The type of events to retrieve ('upcoming' or 'past').
+ * @param {Array}  props.topics            - An array of topic objects to filter events by.
+ * @param {Array}  props.venues            - An array of venue objects to filter events by.
+ *
+ * @return {JSX.Element} The rendered React component.
+ */
 const EventsList = (props) => {
-	const { eventOptions, maxNumberOfEvents, type, topics, venues } = props;
+	const {
+		eventOptions,
+		maxNumberOfEvents,
+		datetimeFormat,
+		type,
+		topics,
+		venues,
+	} = props;
 	const [events, setEvents] = useState([]);
 	const [loaded, setLoaded] = useState(false);
 	const renderEvents = events.map((event) => {
@@ -60,22 +85,22 @@ const EventsList = (props) => {
 				?.join(',');
 		}
 
+		const endpoint =
+			getFromGlobal('urls.eventRestApi') +
+			`/events-list?event_list_type=${type}&max_number=${maxNumberOfEvents}&datetime_format=${datetimeFormat}&topics=${topicsString}&venues=${venuesString}`;
+
 		/**
 		 * Check if user is logged in, so we have current_user for the event present, which
 		 * allows them to interact with the block.
 		 */
-		if (getFromGlobal('is_user_logged_in')) {
+		if (getFromGlobal('misc.isUserLoggedIn')) {
 			apiFetch({
-				path: `/gatherpress/v1/event/events-list?event_list_type=${type}&max_number=${maxNumberOfEvents}&topics=${topicsString}&venues=${venuesString}`,
+				path: endpoint,
 			}).then((data) => {
 				setLoaded(true);
 				setEvents(data);
 			});
 		} else {
-			const endpoint =
-				getFromGlobal('event_rest_api') +
-				`/events-list?event_list_type=${type}&max_number=${maxNumberOfEvents}&topics=${topicsString}&venues=${venuesString}`;
-
 			/**
 			 * Not using apiFetch helper here as it will use X-Wp-Nonce and cache it when page caching is on causing a 403.
 			 *
@@ -90,7 +115,7 @@ const EventsList = (props) => {
 					setEvents(data);
 				});
 		}
-	}, [setEvents, maxNumberOfEvents, type, topics, venues]);
+	}, [setEvents, maxNumberOfEvents, datetimeFormat, type, topics, venues]);
 
 	return (
 		<div className={`gp-${type}-events-list`}>

@@ -22,7 +22,6 @@ use WP_Post;
  * @since 1.0.0
  */
 class Rsvp {
-
 	/**
 	 * Table format for RSVPs.
 	 *
@@ -35,20 +34,21 @@ class Rsvp {
 	 * Cache key format for RSVPs.
 	 *
 	 * @since 1.0.0
-	 * @var string $RSVP_CACHE_KEY
+	 * @var string $CACHE_KEY
 	 */
-	const RSVP_CACHE_KEY = 'gp_rsvp_%d';
+	const CACHE_KEY = 'gp_rsvp_%d';
 
 	/**
 	 * An array of RSVP statuses.
 	 *
 	 * @since 1.0.0
-	 * @var string[] Contains RSVP statuses such as 'attending', 'not_attending', and 'waiting_list'.
+	 * @var string[] Contains RSVP statuses such as 'attending', 'not_attending', 'waiting_list', and 'no_status'.
 	 */
 	public array $statuses = array(
 		'attending',
 		'not_attending',
 		'waiting_list',
+		'no_status',
 	);
 
 	/**
@@ -79,7 +79,7 @@ class Rsvp {
 	 */
 	public function __construct( int $post_id ) {
 		$this->event               = get_post( $post_id );
-		$this->max_attending_limit = Settings::get_instance()->get_value( 'gp_general', 'general', 'max_attending_limit' );
+		$this->max_attending_limit = Settings::get_instance()->get_value( 'general', 'general', 'max_attending_limit' );
 	}
 
 	/**
@@ -109,14 +109,15 @@ class Rsvp {
 			'post_id'   => $event_id,
 			'user_id'   => $user_id,
 			'timestamp' => null,
-			'status'    => 'attend',
+			'status'    => 'no_status',
 			'guests'    => 0,
+			'anonymous' => 0,
 		);
 
 		$table = sprintf( static::TABLE_FORMAT, $wpdb->prefix );
 
 		// @todo Consider implementing caching for improved performance in the future.
-		$data = $wpdb->get_row( $wpdb->prepare( 'SELECT id, timestamp, status, guests FROM ' . esc_sql( $table ) . ' WHERE post_id = %d AND user_id = %d', $event_id, $user_id ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$data = $wpdb->get_row( $wpdb->prepare( 'SELECT id, timestamp, status, guests, anonymous FROM ' . esc_sql( $table ) . ' WHERE post_id = %d AND user_id = %d', $event_id, $user_id ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
 		return array_merge( $default, (array) $data );
 	}
@@ -125,18 +126,19 @@ class Rsvp {
 	 * Save a user's RSVP status for the event.
 	 *
 	 * This method allows assigning a user's RSVP status for the event. The user can be assigned
-	 * one of the following RSVP statuses: 'attending', 'not_attending', or 'waiting_list', and
-	 * optionally specify the number of guests accompanying them. The method handles the storage
-	 * of this information in the database and updates the RSVP status accordingly.
+	 * one of the following RSVP statuses: 'attending', 'not_attending', or 'waiting_list'. The user
+	 * can optionally specify the number of guests accompanying them and whether their RSVP is anonymous.
+	 * The method handles the storage of this information in the database and updates the RSVP status accordingly.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param int    $user_id A user ID.
-	 * @param string $status  RSVP status ('attending', 'not_attending', 'waiting_list').
-	 * @param int    $guests  Number of guests accompanying the user.
-	 * @return string The updated RSVP status ('attending', 'not_attending', 'waiting_list').
+	 * @param int    $user_id   A user ID.
+	 * @param string $status    RSVP status ('attending', 'not_attending', 'waiting_list').
+	 * @param int    $anonymous Indicates if the RSVP is anonymous (1 for anonymous, 0 for not anonymous).
+	 * @param int    $guests    Number of guests accompanying the user.
+	 * @return string The updated RSVP status ('attending', 'not_attending', 'waiting_list', 'no_status').
 	 */
-	public function save( int $user_id, string $status, int $guests = 0 ): string {
+	public function save( int $user_id, string $status, int $anonymous = 0, int $guests = 0 ): string {
 		global $wpdb;
 
 		$event_id = $this->event->ID;
@@ -153,7 +155,7 @@ class Rsvp {
 
 		$table         = sprintf( static::TABLE_FORMAT, $wpdb->prefix );
 		$response      = $this->get( $user_id );
-		$limit_reached = $this->attending_limit_reached( $status );
+		$limit_reached = ( 'attending' === $status && $this->attending_limit_reached() );
 
 		if ( $limit_reached && ! $guests ) {
 			$status = 'waiting_list';
@@ -165,18 +167,26 @@ class Rsvp {
 			'timestamp' => gmdate( 'Y-m-d H:i:s' ),
 			'status'    => sanitize_key( $status ),
 			'guests'    => intval( $guests ),
+			'anonymous' => intval( $anonymous ),
 		);
 
 		if ( intval( $response['id'] ) ) {
 			$where = array(
 				'id' => intval( $response['id'] ),
 			);
-			$save  = $wpdb->update( $table, $data, $where ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+
+			// If not attending and anonymous, just remove record.
+			if ( ( 'not_attending' === $status && $anonymous ) || 'no_status' === $status ) {
+				$save   = $wpdb->delete( $table, $where ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+				$status = 'no_status'; // Set default status for UI.
+			} else {
+				$save = $wpdb->update( $table, $data, $where ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			}
 		} else {
 			$save = $wpdb->insert( $table, $data ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		}
 
-		wp_cache_delete( sprintf( self::RSVP_CACHE_KEY, $event_id ) );
+		wp_cache_delete( sprintf( self::CACHE_KEY, $event_id ) );
 
 		if ( $save ) {
 			$retval = sanitize_key( $status );
@@ -201,7 +211,7 @@ class Rsvp {
 	 */
 	public function check_waiting_list(): int {
 		$responses = $this->responses();
-		$total     = 0;
+		$i         = 0;
 
 		if (
 			intval( $responses['attending']['count'] ) < $this->max_attending_limit
@@ -209,11 +219,10 @@ class Rsvp {
 		) {
 			$waiting_list = $responses['waiting_list']['responses'];
 
-			// People longest on the waiting_list should be added first.
+			// People who are longest on the waiting_list should be added first.
 			usort( $waiting_list, array( $this, 'sort_by_timestamp' ) );
 
 			$total = $this->max_attending_limit - intval( $responses['attending']['count'] );
-			$i     = 0;
 
 			while ( $i < $total ) {
 				// Check that we have enough on the waiting_list to run this.
@@ -223,11 +232,11 @@ class Rsvp {
 
 				$response = $waiting_list[ $i ];
 				$this->save( $response['id'], 'attending' );
-				$i++;
+				++$i;
 			}
 		}
 
-		return intval( $total );
+		return $i;
 	}
 
 	/**
@@ -239,16 +248,14 @@ class Rsvp {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $status Desired attendance status.
 	 * @return bool True if the 'attending' limit has been reached, false otherwise.
 	 */
-	public function attending_limit_reached( string $status ): bool {
+	public function attending_limit_reached(): bool {
 		$responses = $this->responses();
 
 		if (
 			! empty( $responses['attending'] )
 			&& intval( $responses['attending']['count'] ) >= $this->max_attending_limit
-			&& 'attending' === $status
 		) {
 			return true;
 		}
@@ -272,12 +279,15 @@ class Rsvp {
 
 		$event_id = $this->event->ID;
 
-		$cache_key = sprintf( self::RSVP_CACHE_KEY, $event_id );
+		$cache_key = sprintf( self::CACHE_KEY, $event_id );
 		$retval    = wp_cache_get( $cache_key );
 
+		// @todo add testing with cache.
+		// @codeCoverageIgnoreStart
 		if ( ! empty( $retval ) && is_array( $retval ) ) {
 			return $retval;
 		}
+		// @codeCoverageIgnoreEnd
 
 		$retval = array(
 			'all' => array(
@@ -293,12 +303,18 @@ class Rsvp {
 		$site_users  = count_users();
 		$total_users = $site_users['total_users'];
 		$table       = sprintf( static::TABLE_FORMAT, $wpdb->prefix );
-		$data        = (array) $wpdb->get_results( $wpdb->prepare( 'SELECT user_id, timestamp, status, guests FROM ' . esc_sql( $table ) . ' WHERE post_id = %d LIMIT %d', $event_id, $total_users ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$data        = (array) $wpdb->get_results( $wpdb->prepare( 'SELECT user_id, timestamp, status, guests, anonymous FROM ' . esc_sql( $table ) . ' WHERE post_id = %d LIMIT %d', $event_id, $total_users ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$data        = ( ! empty( $data ) ) ? (array) $data : array();
 		$responses   = array();
 		$all_guests  = 0;
+		$statuses    = $this->statuses;
 
-		foreach ( $this->statuses as $status ) {
+		// `no_status` status is not relevant here.
+		$status_key = array_search( 'no_status', $statuses, true );
+		unset( $statuses[ $status_key ] );
+		$statuses = array_values( $statuses );
+
+		foreach ( $statuses as $status ) {
 			$retval[ $status ] = array(
 				'responses' => array(),
 				'count'     => 0,
@@ -314,27 +330,39 @@ class Rsvp {
 			$user_status = sanitize_key( $response['status'] );
 			$user_guests = intval( $response['guests'] );
 			$all_guests += $user_guests;
-
-			if ( 1 > $user_id ) {
-				continue;
-			}
-
-			if ( ! in_array( $user_status, $this->statuses, true ) ) {
-				continue;
-			}
-
 			$user_info   = get_userdata( $user_id );
+			$anonymous   = intval( $response['anonymous'] );
+
+			// @todo make a filter so we can use this function if gp-buddypress plugin is activated.
+			// eg for BuddyPress bp_core_get_user_domain( $user_id )
+			$profile = get_author_posts_url( $user_id );
+
+			if (
+				empty( $user_info ) ||
+				! in_array( $user_status, $statuses, true )
+			) {
+				continue;
+			}
+
+			if (
+				! current_user_can( 'edit_posts' ) && ! empty( $anonymous )
+			) {
+				$user_id = 0;
+				$profile = '';
+
+				$user_info->display_name = __( 'Anonymous', 'gatherpress' );
+			}
+
 			$responses[] = array(
 				'id'        => $user_id,
 				'name'      => $user_info->display_name ?? __( 'Anonymous', 'gatherpress' ),
 				'photo'     => get_avatar_url( $user_id ),
-				// @todo make a filter so we can use this function if gp-buddypress plugin is activated.
-				// 'profile'   => bp_core_get_user_domain( $user_id ),
-				'profile'   => get_author_posts_url( $user_id ),
+				'profile'   => $profile,
 				'role'      => Leadership::get_instance()->get_user_role( $user_id ),
 				'timestamp' => sanitize_text_field( $response['timestamp'] ),
 				'status'    => $user_status,
 				'guests'    => $user_guests,
+				'anonymous' => $anonymous,
 			);
 		}
 
@@ -344,10 +372,10 @@ class Rsvp {
 		$retval['all']['responses'] = $responses;
 		$retval['all']['count']     = count( $retval['all']['responses'] ) + $all_guests;
 
-		foreach ( $this->statuses as $status ) {
+		foreach ( $statuses as $status ) {
 			$retval[ $status ]['responses'] = array_filter(
 				$responses,
-				function( $response ) use ( $status ) {
+				static function ( $response ) use ( $status ) {
 					return ( $status === $response['status'] );
 				}
 			);
@@ -385,7 +413,7 @@ class Rsvp {
 	public function sort_by_role( array $first, array $second ): int {
 		$roles       = array_values(
 			array_map(
-				function( $role ) {
+				static function ( $role ) {
 					return $role['labels']['singular_name'];
 				},
 				Leadership::get_instance()->get_user_roles()
@@ -413,5 +441,4 @@ class Rsvp {
 	public function sort_by_timestamp( array $first, array $second ): bool {
 		return ( strtotime( $first['timestamp'] ) < strtotime( $second['timestamp'] ) );
 	}
-
 }

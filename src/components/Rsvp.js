@@ -3,12 +3,13 @@
  */
 import Modal from 'react-modal';
 import HtmlReactParser from 'html-react-parser';
+import { Tooltip } from 'react-tooltip';
 
 /**
  * WordPress dependencies.
  */
 import { useState } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, _x, sprintf } from '@wordpress/i18n';
 import { ButtonGroup, Spinner } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 
@@ -19,8 +20,30 @@ import { Broadcaster } from '../helpers/broadcasting';
 import RsvpStatusResponse from './RsvpStatusResponse';
 import { getFromGlobal } from '../helpers/globals';
 
-const Rsvp = ({ eventId, currentUser = '', type }) => {
+/**
+ * Rsvp component for GatherPress.
+ *
+ * This component provides functionality for users to RSVP to events. It includes a button
+ * to open a modal for RSVP actions, handles different RSVP statuses, and updates the RSVP
+ * status and guest count accordingly. If the enableAnonymousRsvp prop is true, it shows
+ * a checkbox to permit anonymous RSVPs. The component communicates with the server through
+ * REST API calls and broadcasts changes to other components.
+ *
+ * @since 1.0.0
+ *
+ * @param {Object}  props                     - Component props.
+ * @param {number}  props.postId              - The ID of the event.
+ * @param {Object}  [props.currentUser='']    - Current user's RSVP information.
+ * @param {boolean} props.enableAnonymousRsvp - If true, shows a checkbox to allow anonymous RSVPs.
+ * @param {string}  props.type                - Type of event ('upcoming' or 'past').
+ *
+ * @return {JSX.Element} The rendered React component.
+ */
+const Rsvp = ({ postId, currentUser = '', type, enableAnonymousRsvp }) => {
 	const [rsvpStatus, setRsvpStatus] = useState(currentUser.status);
+	const [rsvpAnonymous, setRsvpAnonymous] = useState(
+		Number(currentUser.anonymous)
+	);
 	const [rsvpGuests, setRsvpGuests] = useState(currentUser.guests);
 	const [selectorHidden, setSelectorHidden] = useState('hidden');
 	const [selectorExpanded, setSelectorExpanded] = useState('false');
@@ -61,7 +84,13 @@ const Rsvp = ({ eventId, currentUser = '', type }) => {
 		setIsOpen(false);
 	};
 
-	const onAnchorClick = async (e, status, guests = 0, close = true) => {
+	const onAnchorClick = async (
+		e,
+		status,
+		anonymous,
+		guests = 0,
+		close = true
+	) => {
 		e.preventDefault();
 
 		if ('attending' !== status) {
@@ -69,13 +98,14 @@ const Rsvp = ({ eventId, currentUser = '', type }) => {
 		}
 
 		apiFetch({
-			path: '/gatherpress/v1/event/rsvp',
+			path: getFromGlobal('urls.eventRestApi') + '/rsvp',
 			method: 'POST',
 			data: {
-				post_id: eventId,
+				post_id: postId,
 				status,
 				guests,
-				_wpnonce: getFromGlobal('nonce'),
+				anonymous,
+				_wpnonce: getFromGlobal('misc.nonce'),
 			},
 		}).then((res) => {
 			if (res.success) {
@@ -152,14 +182,14 @@ const Rsvp = ({ eventId, currentUser = '', type }) => {
 				<div className="gp-modal__content">
 					<div className="gp-modal__text">
 						{__('You must ', 'gatherpress')}
-						<a href={getFromGlobal('login_url')}>
+						<a href={getFromGlobal('urls.loginUrl')}>
 							{__('Login', 'gatherpress')}
 						</a>
 						{__(' to RSVP to events.', 'gatherpress')}
 					</div>
-					{'' !== getFromGlobal('registration_url') && (
+					{'' !== getFromGlobal('urls.registrationUrl') && (
 						<div className="gp-modal__text">
-							<a href={getFromGlobal('registration_url')}>
+							<a href={getFromGlobal('urls.registrationUrl')}>
 								{__('Register', 'gatherpress')}
 							</a>
 							{__(
@@ -189,12 +219,16 @@ const Rsvp = ({ eventId, currentUser = '', type }) => {
 		let buttonStatus = '';
 		let buttonLabel = '';
 
-		if ('not_attending' === status || 'attend' === status) {
+		if ('not_attending' === status || 'no_status' === status) {
 			buttonStatus = 'attending';
 			buttonLabel = __('Attend', 'gatherpress');
 		} else {
 			buttonStatus = 'not_attending';
-			buttonLabel = __('Not Attending', 'gatherpress');
+			buttonLabel = _x(
+				'Not Attending',
+				'action of not attending',
+				'gatherpress'
+			);
 		}
 
 		return (
@@ -219,6 +253,41 @@ const Rsvp = ({ eventId, currentUser = '', type }) => {
 							)
 						)}
 					</div>
+					{enableAnonymousRsvp ? (
+						<div className="gp-modal__anonymous">
+							<input
+								id="gp-anonymous"
+								type="checkbox"
+								onChange={(e) => {
+									const value = Number(e.target.checked);
+									setRsvpAnonymous(value);
+									onAnchorClick(
+										e,
+										rsvpStatus,
+										value,
+										rsvpGuests,
+										false
+									);
+								}}
+								checked={rsvpAnonymous}
+							/>
+							<label
+								htmlFor="gp-anonymous"
+								tabIndex="0"
+								className="gp-tooltip"
+								data-tooltip-id="gp-anonymous-tooltip"
+								data-tooltip-content={__(
+									'Only admins will see your identity.',
+									'gatherpress'
+								)}
+							>
+								{__('List me as anonymous.', 'gatherpress')}
+							</label>
+							<Tooltip id="gp-anonymous-tooltip" />
+						</div>
+					) : (
+						<></>
+					)}
 					{/*@todo Guests feature coming in later version of GatherPress*/}
 					{/*	<label htmlFor="gp-guests">*/}
 					{/*		{__('Number of guests?', 'gatherpress')}*/}
@@ -244,7 +313,9 @@ const Rsvp = ({ eventId, currentUser = '', type }) => {
 						{/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
 						<a
 							href="#"
-							onClick={(e) => onAnchorClick(e, buttonStatus)}
+							onClick={(e) =>
+								onAnchorClick(e, buttonStatus, rsvpAnonymous)
+							}
 							className="gp-buttons__button wp-block-button__link"
 						>
 							{buttonLabel}
@@ -287,20 +358,30 @@ const Rsvp = ({ eventId, currentUser = '', type }) => {
 					style={customStyles}
 					contentLabel={__('Edit RSVP', 'gatherpress')}
 				>
-					{'' === currentUser && <LoggedOutModal />}
-					{'' !== currentUser && (
+					{0 === currentUser.length && <LoggedOutModal />}
+					{0 !== currentUser.length && (
 						<LoggedInModal status={rsvpStatus} />
 					)}
 				</Modal>
 			</ButtonGroup>
-			{'attend' !== rsvpStatus && (
+			{'no_status' !== rsvpStatus && (
 				<div className="gp-status">
 					<RsvpStatusResponse type={type} status={rsvpStatus} />
 
 					{0 < rsvpGuests && (
 						<div className="gp-status__guests">
 							<span>
-								+{rsvpGuests} {__('guest(s)', 'gatherpress')}
+								+{' '}
+								{sprintf(
+									/* translators: %d: Number of guests. */
+									_n(
+										'%d guest',
+										'%d guests',
+										{ rsvpGuests },
+										'gatherpress'
+									),
+									{ rsvpGuests }
+								)}
 							</span>
 						</div>
 					)}

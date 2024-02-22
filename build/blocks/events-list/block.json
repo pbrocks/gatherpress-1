@@ -7,7 +7,7 @@
   "category": "gatherpress",
   "icon": "list-view",
   "example": {},
-  "description": "A block listing events.",
+  "description": "Displays events that are either upcoming or have occurred in the past.",
   "attributes": {
     "eventOptions": {
       "type": "object",
@@ -20,6 +20,10 @@
         "showRsvp": true,
         "showVenue": true
       }
+    },
+    "datetimeFormat": {
+      "type": "string",
+      "default": "D, M j, Y, g:i a T"
     },
     "maxNumberOfEvents": {
       "type": "integer",

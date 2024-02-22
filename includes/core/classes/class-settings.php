@@ -25,7 +25,9 @@ use GatherPress\Core\Traits\Singleton;
  * @since 1.0.0
  */
 class Settings {
-
+	/**
+	 * Enforces a single instance of this class.
+	 */
 	use Singleton;
 
 	const PARENT_SLUG = 'edit.php?post_type=gp_event';
@@ -88,6 +90,7 @@ class Settings {
 		add_action( 'admin_head', array( $this, 'remove_sub_options' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'gatherpress_settings_section', array( $this, 'render_settings_form' ) );
+		add_action( 'gatherpress_text_after', array( $this, 'datetime_preview' ), 10, 2 );
 
 		add_filter( 'submenu_file', array( $this, 'select_menu' ) );
 	}
@@ -236,7 +239,7 @@ class Settings {
 					add_settings_section(
 						$section,
 						$section_settings['name'],
-						function() use ( $section_settings ) {
+						static function () use ( $section_settings ) {
 							if ( ! empty( $section_settings['description'] ) ) {
 								echo '<p class="description">' . wp_kses_post( $section_settings['description'] ) . '</p>';
 							}
@@ -250,7 +253,7 @@ class Settings {
 								$option_settings['field']['type']
 								&& method_exists( $this, $option_settings['field']['type'] )
 							) {
-								$option_settings['callback'] = function() use ( $sub_page, $section, $option, $option_settings ) {
+								$option_settings['callback'] = function () use ( $sub_page, $section, $option, $option_settings ) {
 									$sub_page = Utility::prefix_key( $sub_page );
 									$this->{$option_settings['field']['type']}( $sub_page, $section, $option, $option_settings );
 								};
@@ -413,8 +416,9 @@ class Settings {
 	 * @return mixed The value of the option or its default value.
 	 */
 	public function get_value( string $sub_page, string $section = '', string $option = '' ) {
-		$options = $this->get_options( $sub_page );
-		$default = $this->get_default_value( $sub_page, $section, $option );
+		$sub_page = Utility::prefix_key( $sub_page );
+		$options  = $this->get_options( $sub_page );
+		$default  = $this->get_default_value( $sub_page, $section, $option );
 
 		return (
 			isset( $options[ $section ][ $option ] )
@@ -533,6 +537,18 @@ class Settings {
 	 * @return array An array of sub-pages, each with settings and priority information.
 	 */
 	public function get_sub_pages(): array {
+		/**
+		 * Filters the list of GatherPress sub pages.
+		 *
+		 * Allows a companion plugin or theme to extend GatherPress settings
+		 * by adding additional sub pages to the settings page.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param array $sub_pages The array of sub pages.
+		 *
+		 * @return array Modified array of sub pages.
+		 */
 		$sub_pages = (array) apply_filters( 'gatherpress_sub_pages', array() );
 
 		uasort( $sub_pages, array( $this, 'sort_sub_pages_by_priority' ) );
@@ -610,4 +626,31 @@ class Settings {
 		return (string) $submenu;
 	}
 
+	/**
+	 * Display a preview of the formatted datetime based on the specified name and value.
+	 *
+	 * This method is used to display a preview of the formatted datetime based on the specified
+	 * name and value.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $name  The name of the datetime format option.
+	 * @param string $value The value of the datetime format option.
+	 * @return void
+	 */
+	public function datetime_preview( string $name, string $value ): void {
+		if (
+			'gp_general[formatting][date_format]' === $name ||
+			'gp_general[formatting][time_format]' === $name
+		) {
+			Utility::render_template(
+				sprintf( '%s/includes/templates/admin/settings/partials/datetime-preview.php', GATHERPRESS_CORE_PATH ),
+				array(
+					'name'  => $name,
+					'value' => $value,
+				),
+				true
+			);
+		}
+	}
 }

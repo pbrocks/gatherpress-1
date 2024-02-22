@@ -3,6 +3,7 @@
  */
 import { includes } from 'lodash';
 import classnames from 'classnames';
+import HtmlReactParser from 'html-react-parser';
 
 /**
  * WordPress dependencies.
@@ -30,6 +31,23 @@ import { useSelect } from '@wordpress/data';
 import EventsList from '../../components/EventsList';
 import EditCover from '../../components/EditCover';
 
+/**
+ * Edit component for the GatherPress Event List block.
+ *
+ * This component renders the edit view of the GatherPress Event List block.
+ * It provides an interface for users to customize the display options of the event list,
+ * including the type of events (upcoming or past), the maximum number of events to display,
+ * topics, venues, and various display options such as showing/hiding RSVP responses,
+ * featured images, descriptions, and event venues.
+ *
+ * @since 1.0.0
+ *
+ * @param {Object}   props               - The properties passed to the component.
+ * @param {Object}   props.attributes    - The block attributes.
+ * @param {Function} props.setAttributes - Function to update block attributes.
+ *
+ * @return {JSX.Element} The rendered React component.
+ */
 const Edit = (props) => {
 	const { attributes, setAttributes } = props;
 	const blockProps = useBlockProps();
@@ -115,6 +133,7 @@ const Edit = (props) => {
 		{ label: 'Thumbnail', value: 'thumbnail' },
 		{ label: 'Large', value: 'large' },
 	];
+
 	return (
 		<>
 			<InspectorControls>
@@ -170,6 +189,19 @@ const Edit = (props) => {
 					</ButtonGroup>
 				</PanelBody>
 				<PanelBody>
+					<TextControl
+						label={__('Date & time format', 'gatherpress')}
+						value={attributes.datetimeFormat}
+						help={HtmlReactParser(
+							__(
+								'For more information read the <a href="https://wordpress.org/documentation/article/customize-date-and-time-format/">Documentation on date and time formatting</a>.',
+								'gatherpress'
+							)
+						)}
+						onChange={(newVal) =>
+							setAttributes({ datetimeFormat: newVal })
+						}
+					/>
 					<RangeControl
 						label={__(
 							'Maximum number of events to display',
@@ -344,6 +376,7 @@ const Edit = (props) => {
 					<EventsList
 						eventOptions={attributes.eventOptions}
 						maxNumberOfEvents={attributes.maxNumberOfEvents}
+						datetimeFormat={attributes.datetimeFormat}
 						type={attributes.type}
 						topics={attributes.topics}
 						venues={attributes.venues}

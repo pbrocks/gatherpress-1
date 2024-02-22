@@ -23,7 +23,6 @@ use WP_Post;
  * @since 1.0.0
  */
 class Event {
-
 	/**
 	 * Cache key format for storing and retrieving event datetimes.
 	 *
@@ -64,20 +63,19 @@ class Event {
 	 */
 	const TAXONOMY = 'gp_topic';
 
-
 	/**
 	 * Event post object.
 	 *
 	 * @since 1.0.0
-	 * @var array|WP_Post|null
+	 * @var WP_Post|null
 	 */
-	protected $event = null;
+	public ?WP_Post $event = null;
 
 	/**
 	 * RSVP instance.
 	 *
-	 * @var Rsvp|null
 	 * @since 1.0.0
+	 * @var Rsvp|null
 	 */
 	public ?Rsvp $rsvp = null;
 
@@ -91,14 +89,10 @@ class Event {
 	 * @param int $post_id The event post ID.
 	 */
 	public function __construct( int $post_id ) {
-		if ( self::POST_TYPE !== get_post_type( $post_id ) ) {
-			return null;
+		if ( self::POST_TYPE === get_post_type( $post_id ) ) {
+			$this->event = get_post( $post_id );
+			$this->rsvp  = new Rsvp( $post_id );
 		}
-
-		$this->event = get_post( $post_id );
-		$this->rsvp  = new Rsvp( $post_id );
-
-		return $this->event;
 	}
 
 	/**
@@ -128,6 +122,7 @@ class Event {
 				'not_found_in_trash' => __( 'Not found in Trash', 'gatherpress' ),
 			),
 			'show_in_rest'  => true,
+			'rest_base'     => 'gp_events',
 			'public'        => true,
 			'hierarchical'  => false,
 			'template'      => array(
@@ -175,14 +170,23 @@ class Event {
 	 */
 	public static function get_post_meta_registration_args(): array {
 		return array(
-			'_online_event_link' => array(
-				'auth_callback'     => function() {
+			'online_event_link'     => array(
+				'auth_callback'     => function () {
 					return current_user_can( 'edit_posts' );
 				},
 				'sanitize_callback' => 'sanitize_url',
 				'show_in_rest'      => true,
 				'single'            => true,
 				'type'              => 'string',
+			),
+			'enable_anonymous_rsvp' => array(
+				'auth_callback'     => function () {
+					return current_user_can( 'edit_posts' );
+				},
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'show_in_rest'      => true,
+				'single'            => true,
+				'type'              => 'boolean',
 			),
 		);
 	}
@@ -236,16 +240,22 @@ class Event {
 	 * @return string The formatted display date and time or an em dash if not available.
 	 */
 	public function get_display_datetime(): string {
+		$settings    = Settings::get_instance();
+		$date_format = $settings->get_value( 'general', 'formatting', 'date_format' );
+		$time_format = $settings->get_value( 'general', 'formatting', 'time_format' );
+		$timezone    = $settings->get_value( 'general', 'formatting', 'show_timezone' ) ? ' T' : '';
+
 		if ( $this->is_same_date() ) {
-			$start = $this->get_datetime_start( 'l, F j, Y g:i A' );
-			$end   = $this->get_datetime_end( 'g:i A T' );
+			$start = $this->get_datetime_start( $date_format . ' ' . $time_format );
+			$end   = $this->get_datetime_end( $time_format . $timezone );
 		} else {
-			$start = $this->get_datetime_start( 'l, F j, Y, g:i A' );
-			$end   = $this->get_datetime_end( 'l, F j, Y, g:i A T' );
+			$start = $this->get_datetime_start( $date_format . ', ' . $time_format );
+			$end   = $this->get_datetime_end( $date_format . ', ' . $time_format . $timezone );
 		}
 
 		if ( ! empty( $start ) && ! empty( $end ) ) {
-			return sprintf( '%s to %s', $start, $end );
+			/* translators: %1$s: start datetime, %2$s: end datetime. */
+			return sprintf( __( '%1$s to %2$s', 'gatherpress' ), $start, $end );
 		}
 
 		return __( '—', 'gatherpress' );
@@ -277,6 +287,28 @@ class Event {
 	}
 
 	/**
+	 * Check if the event has yet to occur (in the future).
+	 *
+	 * This method compares the start datetime of the event with the current time
+	 * to determine if the event has yet to take place.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $offset The time offset, in minutes, to adjust the consideration of the event end time.
+	 *                    A positive value extends the period of considering the event ongoing,
+	 *                    while a negative value checks for an earlier end.
+	 *                    Default is 0, checking if the event is ongoing at the exact current time.
+	 * @return bool True if the event is in the future, false otherwise.
+	 */
+	public function has_event_started( int $offset = 0 ): bool {
+		$data    = $this->get_datetime();
+		$start   = $data['datetime_start_gmt'];
+		$current = time();
+
+		return ( ! empty( $start ) && $current >= ( strtotime( $start ) + ( $offset * 60 ) ) );
+	}
+
+	/**
 	 * Check if the event has already occurred (in the past).
 	 *
 	 * This method compares the end datetime of the event with the current time
@@ -284,18 +316,37 @@ class Event {
 	 *
 	 * @since 1.0.0
 	 *
+	 * @param int $offset The time offset, in minutes, to adjust the consideration of the event start time.
+	 *                    A positive value delays the event start, while a negative value checks for an earlier start.
+	 *                    Default is 0, checking if the event has started at the exact current time.
 	 * @return bool True if the event is in the past, false otherwise.
 	 */
-	public function has_event_past(): bool {
+	public function has_event_past( int $offset = 0 ): bool {
 		$data    = $this->get_datetime();
 		$end     = $data['datetime_end_gmt'];
-		$current = time();
+		$current = time() - ( $offset * 60 );
 
-		if ( ! empty( $end ) && $current > strtotime( $end ) ) {
-			return true;
-		}
+		return ( ! empty( $end ) && $current > ( strtotime( $end ) + ( $offset * 60 ) ) );
+	}
 
-		return false;
+	/**
+	 * Check if the event is currently happening.
+	 *
+	 * This method determines whether the event has started and is not in the past.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int $started_offset The time offset, in minutes, to adjust the consideration of the event start time.
+	 *                            A positive value delays the event start, while a negative value checks for an earlier start.
+	 *                            Default is 0, checking if the event has started at the exact current time.
+	 * @param int $past_offset    The time offset, in minutes, to adjust the consideration of the event end time.
+	 *                            A positive value extends the period of considering the event ongoing,
+	 *                            while a negative value checks for an earlier end.
+	 *                            Default is 0, checking if the event is ongoing at the exact current time.
+	 * @return bool True if the event has started and is not in the past, false otherwise.
+	 */
+	public function is_event_happening( int $started_offset = 0, int $past_offset = 0 ): bool {
+		return $this->has_event_started( $started_offset ) && ! $this->has_event_past( $past_offset );
 	}
 
 	/**
@@ -511,14 +562,14 @@ class Event {
 		}
 
 		$cache_key = sprintf( self::DATETIME_CACHE_KEY, $this->event->ID );
-		$data      = wp_cache_get( $cache_key );
+		$data      = get_transient( $cache_key );
 
 		if ( empty( $data ) || ! is_array( $data ) ) {
 			$table = sprintf( static::TABLE_FORMAT, $wpdb->prefix );
-			$data  = (array) $wpdb->get_results( $wpdb->prepare( 'SELECT datetime_start, datetime_start_gmt, datetime_end, datetime_end_gmt, timezone FROM ' . esc_sql( $table ) . ' WHERE post_id = %d LIMIT 1', $this->event->ID ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$data  = (array) $wpdb->get_results( $wpdb->prepare( 'SELECT datetime_start, datetime_start_gmt, datetime_end, datetime_end_gmt, timezone FROM ' . esc_sql( $table ) . ' WHERE post_id = %d LIMIT 1', $this->event->ID ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$data  = ( ! empty( $data ) ) ? (array) current( $data ) : array();
 
-			wp_cache_set( $cache_key, $data, 15 * MINUTE_IN_SECONDS );
+			set_transient( $cache_key, $data, 15 * MINUTE_IN_SECONDS );
 		}
 
 		return array_merge(
@@ -589,7 +640,7 @@ class Event {
 		}
 
 		if ( is_a( $venue, 'WP_Post' ) ) {
-			$venue_meta                        = json_decode( get_post_meta( $venue->ID, '_venue_information', true ) );
+			$venue_meta                        = json_decode( get_post_meta( $venue->ID, 'venue_information', true ) );
 			$venue_information['full_address'] = $venue_meta->fullAddress ?? ''; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$venue_information['phone_number'] = $venue_meta->phoneNumber ?? ''; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$venue_information['website']      = $venue_meta->website ?? '';
@@ -821,7 +872,7 @@ class Event {
 		$retval            = false;
 		$fields            = array_filter(
 			$params,
-			function( $key ) {
+			function ( $key ) {
 				return in_array(
 					$key,
 					array(
@@ -857,12 +908,12 @@ class Event {
 		);
 
 		if ( ! empty( $exists ) ) {
-			$retval = $wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$retval = $wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 				$table,
 				$fields,
 				array( 'post_id' => $fields['post_id'] )
 			);
-			wp_cache_delete( sprintf( self::DATETIME_CACHE_KEY, $fields['post_id'] ) );
+			delete_transient( sprintf( self::DATETIME_CACHE_KEY, $fields['post_id'] ) );
 		} else {
 			$retval = $wpdb->insert( $table, $fields ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		}
@@ -881,12 +932,24 @@ class Event {
 	 * @return string The online event link if all conditions are met; otherwise, an empty string.
 	 */
 	public function maybe_get_online_event_link(): string {
-		$event_link = (string) get_post_meta( $this->event->ID, '_online_event_link', true );
+		$event_link = (string) get_post_meta( $this->event->ID, 'online_event_link', true );
 
-		if (
-			! apply_filters( 'gatherpress_force_online_event_link', false ) &&
-			! is_admin()
-		) {
+		/**
+		 * Filters whether to force the display of the online event link.
+		 *
+		 * Allows modification of the decision to force the online event link
+		 * display in the `maybe_get_online_event_link` method. Return true to
+		 * force the online event link, or false to allow normal checks.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @param bool $force_online_event_link Whether to force the display of the online event link.
+		 *
+		 * @return bool True to force online event link, false to allow normal checks.
+		 */
+		$force_online_event_link = apply_filters( 'gatherpress_force_online_event_link', false );
+
+		if ( ! $force_online_event_link && ! is_admin() ) {
 			if ( ! $this->rsvp ) {
 				return '';
 			}
@@ -896,7 +959,7 @@ class Event {
 			if (
 				! isset( $user['status'] ) ||
 				'attending' !== $user['status'] ||
-				$this->has_event_past()
+				! $this->is_event_happening( -5 )
 			) {
 				return '';
 			}
@@ -904,5 +967,4 @@ class Event {
 
 		return $event_link;
 	}
-
 }
